@@ -1,0 +1,50 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    
+    <TextureView
+        android:id="@+id/video_previewer_surface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/linearLayout" />
+    
+     <LinearLayout 
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_alignParentBottom="true"
+         android:id="@+id/linearLayout">
+    <Button
+        android:id="@+id/btn_capture"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:text="Analyze"
+        android:textSize="12sp"/>
+     </LinearLayout>
+
+    <TextView
+        android:id="@+id/timer"
+        android:layout_width="150dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="23dp"
+        android:gravity="center"
+        android:textColor="#ffffff"
+        android:layout_alignTop="@+id/video_previewer_surface"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/analysis"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:textColor="#ffffff"
+        android:text="TextView" />
+
+</RelativeLayout>
