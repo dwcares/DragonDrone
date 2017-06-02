@@ -6,15 +6,17 @@ A Microsoft Cognitive Services computer vision demo built for a DJI Mavic Pro Dr
 ### Phase 0
 - [ ] P1: Facial verification
 - [ ] P1: Manual trigger for verify (button on controller, or in app)
-- [ ] P2: real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
+- [ ] P3: Real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 - [ ] P1: FPV view of done
-- [ ] P1: showing successful detection
-- [ ] P1: show in the app
+- [ ] P1: Showing successful detection
+- [ ] P2: Local Face detection
+- [ ] P2: Draw boxes around identified faces
+- [ ] P3: Draw boxes around all detected faces
+- [ ] P1: Show success the app
 - [ ] P2: Turn lights on/off when white walker found
-- [x] P1: Demoable -> airserver
-- [ ] P1: Test airserver with different networks
-- [x] P1: take off and land manually - using controller
-- [ ] P2: Face detection
+- [ ] P1: Test AirServer with different networks
+- [x] P1: Demoable -> AirServer
+- [x] P1: Take off and land manually - using controller
 
 ### Phase 1
 - [ ] P1: take off/land in app
