@@ -13,8 +13,8 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     var isPreviewShowing = false
     var camera : DJICamera!
     
-    let personToIdentifyID = "b9d45702-a883-481c-b7cf-b86b9f8bbb47"
-    let faceGroupID = "test"
+    let personToIdentifyID = "fc6ef0d7-4fa3-4d70-88ce-09cfa9b02646"
+    let faceGroupID = "dragon_drone"
 
     let analyzeQueue =
         DispatchQueue(label: "TheRobot.DragonDrone.AnalyzeQueue")
@@ -79,19 +79,32 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         if (camera == nil) { return }
         
+        self.setDroneLEDs(setOn: false)
+
         VideoPreviewer.instance().snapshotPreview { (previewImage) in
         
+//        let previewImage:UIImage?
+//        previewImage = #imageLiteral(resourceName: "bigger")
+
             self.showPreview(previewImage: previewImage!)
       
             self.detectFacesCI(image: previewImage!, parentView: self.fpvView)
       
             FaceAPI.detectFaces(previewImage!) { (faces) in
                 
+                DispatchQueue.main.async(execute: {
+                    self.logLabel.text = "faces detected: \(faces[0])"
+                    
+                    self.drawDetectedFaces(faces: faces, parentView: self.fpvView)
+                })
+
+                
                 FaceAPI.identifyFaces(faces, personGroupId: self.faceGroupID, personToFind:self.personToIdentifyID ) { (matchedFaceIdentity) in
                     
                     DispatchQueue.main.async(execute: {
                         self.logLabel.text = "id: \(matchedFaceIdentity.faceIdentity!) confidence: \(String(format: "%.2f", matchedFaceIdentity.faceIdentityConfidence!)))"
                         
+                        self.setDroneLEDs(setOn: true)
                         print("Found face identity: \(matchedFaceIdentity)")
                     })
                 }
@@ -147,14 +160,28 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             faceViewBounds.origin.x += offsetX
             faceViewBounds.origin.y += offsetY
             
-            addFaceBoxToView(frame: faceViewBounds, view: parentView)
+            addFaceBoxToView(frame: faceViewBounds, view: parentView, color: UIColor.yellow.cgColor)
             
         }
         return faces
 
     }
     
-    func addFaceBoxToView(frame:CGRect, view: UIView) {
+    func drawDetectedFaces(faces: [Face], parentView: UIView) {
+        clearFaceBoxes(reuseCount: faces.count)
+        
+        let scale = CGFloat(analyzePreviewImageView.image!.cgImage!.height) / analyzePreviewImageView.layer.frame.height
+        
+        print(scale)
+        
+        for face in faces {
+            
+            let faceRect = CGRect(x: CGFloat(face.left) / scale, y: CGFloat(face.top - face.height / 2) / scale, width:CGFloat(face.width) / scale, height: CGFloat(face.width) / scale)
+            addFaceBoxToView(frame: faceRect, view: parentView, color: UIColor.green.cgColor)
+        }
+    }
+    
+    func addFaceBoxToView(frame:CGRect, view: UIView, color: CGColor) {
         let faceBox:UIView
         
         if (reuseFaceBoxes.count > 0) {
@@ -168,6 +195,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         faceBoxes.append(faceBox)
         
         UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+            faceBox.layer.borderColor = color
             faceBox.layer.opacity = 0.4
             faceBox.frame = frame
             
@@ -185,13 +213,14 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         faceBox.layer.cornerRadius = 10
         faceBox.backgroundColor = UIColor.clear
         faceBox.layer.opacity = 0.0
+        faceBox.layer.frame = frame
         
         return faceBox
     }
     
     func clearFaceBoxes(reuseCount:Int) {
         
-        for (index,faceBox) in faceBoxes.enumerated()  {
+        for faceBox in faceBoxes  {
             if (reuseFaceBoxes.count >= reuseCount) {
                 faceBox.removeFromSuperview()
  
@@ -227,6 +256,24 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         return (Int(Date().timeIntervalSince(lastUpdate)) >= Int(interval))
     }
+    
+    // 
+    // Drone Helpers
+    //
+    func setDroneLEDs(setOn: Bool) {
+        let product = DJISDKManager.product()
+        
+        if (product == nil) {
+            return
+        }
+        
+        if (product!.isKind(of: DJIAircraft.self)) {
+            let controller = (product as! DJIAircraft).flightController
+            controller!.setLEDsEnabled(setOn) { (error) in
+            }
+        }
+
+    }
 
     
     
@@ -246,6 +293,10 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
             if (camera != nil) {
                 camera!.delegate = self
+                
+    
+                self.setDroneLEDs(setOn: false)
+    
                 
                 VideoPreviewer.instance().start()
                 
@@ -309,6 +360,9 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     @IBAction func analyzeAction(_ sender: UIButton) {
         if (isPreviewShowing) {
             analyzeButton.setTitle("Analyze",  for: UIControlState.normal)
+            self.logLabel.text = ""
+            self.setDroneLEDs(setOn: false)
+            
 
             hidePreview()
         } else {

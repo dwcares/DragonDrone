@@ -362,7 +362,7 @@ class FaceAPI: NSObject {
                     let candidates = face["candidates"] as! JSONArray
                     
                     for candidate in candidates {
-                        print("Found person: \(candidate["personId"] as! String)!")
+                        print("Found person: \(candidate["personId"] as! String)")
                         
                         if candidate["personId"] as! String == personToFind {
                             // find face information based on faceId
