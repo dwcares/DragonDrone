@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Y5h-KL-TjC">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Y5h-KL-TjC">
     <device id="retina4_7" orientation="landscape">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -25,10 +24,20 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HAG-NF-7rh">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6ag-u8-B0l" userLabel="FaceBox">
-                                        <rect key="frame" x="371" y="123" width="82" height="82"/>
+                                    <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RRD-mb-hQo" userLabel="Analyze Preview">
+                                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    </view>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                    </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eeV-rF-TJZ" userLabel="Analyze Button">
+                                        <rect key="frame" x="34" y="328" width="54" height="30"/>
+                                        <state key="normal" title="Analyze">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="analyzeAction:" destination="Y5h-KL-TjC" eventType="touchUpInside" id="0fv-Kv-jXc"/>
+                                        </connections>
+                                    </button>
                                     <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="ZAE-YY-Fg8">
                                         <rect key="frame" x="397" y="330" width="250" height="29"/>
                                         <constraints>
@@ -43,35 +52,8 @@
                                             <action selector="recordModeSegmentChange:" destination="Y5h-KL-TjC" eventType="valueChanged" id="fNW-vq-r3e"/>
                                         </connections>
                                     </segmentedControl>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a9I-ld-OoE">
-                                        <rect key="frame" x="30" y="328" width="55" height="30"/>
-                                        <state key="normal" title="Capture">
-                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="captureAction:" destination="Y5h-KL-TjC" eventType="touchUpInside" id="vbQ-LV-Yfi"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SI7-QX-ED8">
-                                        <rect key="frame" x="125" y="328" width="49" height="30"/>
-                                        <state key="normal" title="Record">
-                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="recordAction:" destination="Y5h-KL-TjC" eventType="touchUpInside" id="x87-vL-DPX"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eeV-rF-TJZ" userLabel="Analyze Button">
-                                        <rect key="frame" x="208" y="328" width="54" height="30"/>
-                                        <state key="normal" title="Analyze">
-                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="analyzeAction:" destination="Y5h-KL-TjC" eventType="touchUpInside" id="0fv-Kv-jXc"/>
-                                        </connections>
-                                    </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" lineBreakMode="wordWrap" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b4I-g0-k4A" userLabel="logLabel">
-                                        <rect key="frame" x="313" y="94" width="333.5" height="187.5"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="wordWrap" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b4I-g0-k4A" userLabel="logLabel">
+                                        <rect key="frame" x="325.5" y="94" width="333.5" height="187.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                         <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
@@ -80,34 +62,20 @@
                                 <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="ZAE-YY-Fg8" secondAttribute="trailing" constant="20" id="3kU-pO-hQ0"/>
-                                    <constraint firstItem="SI7-QX-ED8" firstAttribute="leading" secondItem="a9I-ld-OoE" secondAttribute="trailing" constant="40" id="A34-MR-sQc"/>
+                                    <constraint firstItem="eeV-rF-TJZ" firstAttribute="leading" secondItem="HAG-NF-7rh" secondAttribute="leading" constant="34" id="ASg-De-5TF"/>
                                     <constraint firstAttribute="trailing" secondItem="b4I-g0-k4A" secondAttribute="trailing" constant="8" id="IPt-TX-GbN"/>
-                                    <constraint firstItem="eeV-rF-TJZ" firstAttribute="top" secondItem="SI7-QX-ED8" secondAttribute="top" id="Ra8-Pl-Y0N"/>
+                                    <constraint firstItem="eeV-rF-TJZ" firstAttribute="baseline" secondItem="ZAE-YY-Fg8" secondAttribute="baseline" id="MD2-KR-3jB"/>
                                     <constraint firstItem="b4I-g0-k4A" firstAttribute="centerY" secondItem="HAG-NF-7rh" secondAttribute="centerY" id="ZGO-Eb-fN1"/>
-                                    <constraint firstItem="a9I-ld-OoE" firstAttribute="bottom" secondItem="ZAE-YY-Fg8" secondAttribute="bottom" id="cg9-0f-8w1"/>
-                                    <constraint firstItem="SI7-QX-ED8" firstAttribute="bottom" secondItem="a9I-ld-OoE" secondAttribute="bottom" id="eA7-9m-pME"/>
                                     <constraint firstAttribute="bottom" secondItem="ZAE-YY-Fg8" secondAttribute="bottom" constant="17" id="ltM-TP-Nwl"/>
                                     <constraint firstItem="b4I-g0-k4A" firstAttribute="height" secondItem="HAG-NF-7rh" secondAttribute="height" multiplier="1:2" id="oql-dG-IkH"/>
                                     <constraint firstItem="b4I-g0-k4A" firstAttribute="width" secondItem="HAG-NF-7rh" secondAttribute="width" multiplier="1:2" id="tB2-xU-8M8"/>
-                                    <constraint firstItem="a9I-ld-OoE" firstAttribute="leading" secondItem="HAG-NF-7rh" secondAttribute="leading" constant="30" id="vz5-pq-Anq"/>
-                                    <constraint firstItem="eeV-rF-TJZ" firstAttribute="leading" secondItem="SI7-QX-ED8" secondAttribute="trailing" constant="34" id="y1p-0b-ytU"/>
                                 </constraints>
                             </view>
-                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00:00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3on-bf-sf7">
-                                <rect key="frame" x="-20" y="28" width="667" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="3on-bf-sf7" firstAttribute="top" secondItem="oFq-A1-eWo" secondAttribute="bottom" constant="8" id="AfX-wy-a54"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="3on-bf-sf7" secondAttribute="trailing" id="An5-2N-Jvj"/>
-                            <constraint firstItem="3on-bf-sf7" firstAttribute="trailing" secondItem="ZAE-YY-Fg8" secondAttribute="trailing" id="EHo-FQ-sAI"/>
+                            <constraint firstItem="HAG-NF-7rh" firstAttribute="centerX" secondItem="KIO-0w-lqp" secondAttribute="centerX" id="7PC-eu-dJa"/>
                             <constraint firstItem="HAG-NF-7rh" firstAttribute="centerY" secondItem="KIO-0w-lqp" secondAttribute="centerY" id="IZS-A2-zxV"/>
-                            <constraint firstItem="3on-bf-sf7" firstAttribute="width" secondItem="HAG-NF-7rh" secondAttribute="width" id="Ihg-B6-fac"/>
-                            <constraint firstItem="HAG-NF-7rh" firstAttribute="top" secondItem="3on-bf-sf7" secondAttribute="bottom" constant="-49" id="O5R-se-GMi"/>
                             <constraint firstAttribute="width" secondItem="HAG-NF-7rh" secondAttribute="width" id="aAl-Xa-bIL"/>
                             <constraint firstItem="HAG-NF-7rh" firstAttribute="height" secondItem="KIO-0w-lqp" secondAttribute="height" id="txo-55-GZK"/>
                         </constraints>
@@ -115,13 +83,10 @@
                     <navigationItem key="navigationItem" id="J1c-zF-EhE"/>
                     <connections>
                         <outlet property="analyzeButton" destination="eeV-rF-TJZ" id="j3C-Hx-uaY"/>
-                        <outlet property="captureButton" destination="a9I-ld-OoE" id="2l4-wQ-2bZ"/>
-                        <outlet property="faceBoxView" destination="6ag-u8-B0l" id="Pka-wK-9up"/>
+                        <outlet property="analyzePreviewImageView" destination="RRD-mb-hQo" id="rzg-jj-skK"/>
                         <outlet property="fpvView" destination="HAG-NF-7rh" id="CtQ-C3-XvJ"/>
                         <outlet property="logLabel" destination="b4I-g0-k4A" id="mx0-vy-mip"/>
-                        <outlet property="recordButton" destination="SI7-QX-ED8" id="7lN-5J-eZZ"/>
                         <outlet property="recordModeSegmentControl" destination="ZAE-YY-Fg8" id="jgC-oC-8wD"/>
-                        <outlet property="recordTimeLabel" destination="3on-bf-sf7" id="a0h-xU-wu6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="spR-T1-rIm" userLabel="First Responder" sceneMemberID="firstResponder"/>

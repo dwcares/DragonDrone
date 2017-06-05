@@ -8,41 +8,33 @@ import DJISDK
 import VideoPreviewer
 import CoreImage
 
-class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerDelegate, DJIBaseProductDelegate, DJICameraDelegate, AnalyzeImageDelegate {
+class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerDelegate, DJIBaseProductDelegate, DJICameraDelegate {
     
-    var isRecording : Bool!
-    var isAnalyzing = false
+    var isPreviewShowing = false
     var camera : DJICamera!
     
+    let personToIdentifyID = "b9d45702-a883-481c-b7cf-b86b9f8bbb47"
+    let faceGroupID = "test"
+
     let analyzeQueue =
         DispatchQueue(label: "TheRobot.DragonDrone.AnalyzeQueue")
     
-    let analyzeImage = CognitiveServices.sharedInstance.analyzeImage
-    let analyzeInterval = TimeInterval(3.00)
-    var analyzeLastUpdate = Date()
     let faceDetectInterval = TimeInterval(1.00)
     var faceDetectLastUpdate = Date()
     
+    var faceBoxes:[UIView] = []
+    var reuseFaceBoxes:[UIView] = []
+    
     @IBOutlet var analyzeButton: UIButton!
-    
-    @IBOutlet var recordTimeLabel: UILabel!
-    
-    @IBOutlet var captureButton: UIButton!
-    
-    @IBOutlet var recordButton: UIButton!
-    
     @IBOutlet var recordModeSegmentControl: UISegmentedControl!
-    
     @IBOutlet var fpvView: UIView!
-    
     @IBOutlet var logLabel: UILabel!
-    
-    @IBOutlet var faceBoxView: UIView!
-    
+  
+    @IBOutlet var analyzePreviewImageView: UIImageView!
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        analyzeImage.delegate = self
         VideoPreviewer.instance().setView(self.fpvView)
         DJISDKManager.registerApp(with: self)
     }
@@ -50,7 +42,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         
-        analyzeImage.delegate = nil
         VideoPreviewer.instance().setView(nil)
         DJISDKManager.videoFeeder()?.primaryVideoFeed.remove(self)
 
@@ -58,8 +49,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        recordTimeLabel.isHidden = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -69,7 +58,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     //
     //  Helpers
     //
-    
     
     func fetchCamera() -> DJICamera? {
         let product = DJISDKManager.product()
@@ -87,88 +75,47 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         return nil
     }
     
-    func formatSeconds(seconds: UInt) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(seconds))
+    func analyzeFaces() {
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "mm:ss"
+        if (camera == nil) { return }
         
-        return(dateFormatter.string(from: date))
-    }
-    
-    //
-    //  DJIBaseProductDelegate
-    //
-    
-    func productConnected(_ product: DJIBaseProduct?) {
+        VideoPreviewer.instance().snapshotPreview { (previewImage) in
         
-        NSLog("Product Connected")
-        
-        
-        if (product != nil) {
-            product!.delegate = self
-            
-            camera = self.fetchCamera()
-            
-            if (camera != nil) {
-                camera!.delegate = self
+            self.showPreview(previewImage: previewImage!)
+      
+            self.detectFacesCI(image: previewImage!, parentView: self.fpvView)
+      
+            FaceAPI.detectFaces(previewImage!) { (faces) in
                 
-                VideoPreviewer.instance().start()
-
+                FaceAPI.identifyFaces(faces, personGroupId: self.faceGroupID, personToFind:self.personToIdentifyID ) { (matchedFaceIdentity) in
+                    
+                    DispatchQueue.main.async(execute: {
+                        self.logLabel.text = "id: \(matchedFaceIdentity.faceIdentity!) confidence: \(String(format: "%.2f", matchedFaceIdentity.faceIdentityConfidence!)))"
+                        
+                        print("Found face identity: \(matchedFaceIdentity)")
+                    })
+                }
             }
         }
     }
-    
-    func productDisconnected() {
-        
-        NSLog("Product Disconnected")
 
-        camera = nil
+    func detectFacesRealTime() {
         
-        VideoPreviewer.instance().clearVideoData()
-        VideoPreviewer.instance().close()
-        
-    }
-    
-    func analyze() {
-        
-        if (self.intervalElapsed(interval: faceDetectInterval, lastUpdate: faceDetectLastUpdate) && isAnalyzing ) {
+        if (self.intervalElapsed(interval: faceDetectInterval, lastUpdate: faceDetectLastUpdate) && !isPreviewShowing) {
             self.faceDetectLastUpdate = Date()
         } else {
             return
         }
         
         VideoPreviewer.instance().snapshotPreview { (previewImage) in
-            
-            self.detectFaces(image: previewImage!, view: self.fpvView, faceBox: self.faceBoxView)
-            
-            let visualFeatures: [AnalyzeImage.AnalyzeImageVisualFeatures] = [.Categories, .Description, .Faces, .ImageType, .Color, .Adult]
-            let requestObject: AnalyzeImageRequestObject = (previewImage!, visualFeatures)
-            
-            if (self.intervalElapsed(interval: self.analyzeInterval, lastUpdate: self.analyzeLastUpdate) && self.isAnalyzing ) {
-                self.analyzeLastUpdate = Date()
-            
-                self.analyzeQueue.async {
-                
-                    try! self.analyzeImage.analyzeImageWithRequestObject(requestObject, completion: { (response) in
-                        
-                        DispatchQueue.main.async(execute: {
-                            self.logLabel.text = response?.descriptionText
-                        })
-                        
-                    })
-                    
-                }
-            }
-            
+            self.detectFacesCI(image: previewImage!, parentView: self.fpvView)
         }
-        
     }
     
-    func detectFaces(image: UIImage, view:UIView, faceBox:UIView) {
+    func detectFacesCI(image: UIImage, parentView: UIView) -> [CIFeature]?  {
         
         guard let personciImage = CIImage(image: image) else {
-            return
+            return nil
         }
         
         let accuracy = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
@@ -180,16 +127,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         var transform = CGAffineTransform(scaleX: 1, y: -1)
         transform = transform.translatedBy(x: 0, y: -ciImageSize.height)
         
-        if (faces!.count > 0) {
-            faceBox.isHidden = false
-        } else {
-            faceBox.isHidden = true
-            faceBox.layer.borderWidth = 3
-            faceBox.layer.borderColor = UIColor.yellow.cgColor
-            faceBox.layer.cornerRadius = 10
-            faceBox.backgroundColor = UIColor.clear
-            faceBox.layer.opacity = 0.4
-        }
+        clearFaceBoxes(reuseCount: faces!.count)
         
         for face in faces as! [CIFaceFeature] {
             
@@ -209,32 +147,122 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             faceViewBounds.origin.x += offsetX
             faceViewBounds.origin.y += offsetY
             
-            UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
-                
-                faceBox.frame = faceViewBounds
-
-            }, completion: { (success:Bool) in
-                
-            })
-     
+            addFaceBoxToView(frame: faceViewBounds, view: parentView)
             
-         
-//            
-//            if face.hasLeftEyePosition {
-//                print("Left eye bounds are \(face.leftEyePosition)")
-//            }
-//            
-//            if face.hasRightEyePosition {
-//                print("Right eye bounds are \(face.rightEyePosition)")
-//            }
         }
+        return faces
+
     }
     
-    func intervalElapsed (interval: TimeInterval, lastUpdate: Date ) -> Bool {
+    func addFaceBoxToView(frame:CGRect, view: UIView) {
+        let faceBox:UIView
+        
+        if (reuseFaceBoxes.count > 0) {
+            faceBox = reuseFaceBoxes.first!
+            reuseFaceBoxes.removeFirst()
+        } else {
+            faceBox = createFaceBox(frame: frame)
+            view.addSubview(faceBox)
+        }
+        
+        faceBoxes.append(faceBox)
+        
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+            faceBox.layer.opacity = 0.4
+            faceBox.frame = frame
+            
+        }, completion: { (success:Bool) in
+            
+        })
+        
+    }
     
+    func createFaceBox(frame: CGRect) -> UIView {
+        let faceBox = UIView()
+        faceBox.isHidden = false
+        faceBox.layer.borderWidth = 3
+        faceBox.layer.borderColor = UIColor.yellow.cgColor
+        faceBox.layer.cornerRadius = 10
+        faceBox.backgroundColor = UIColor.clear
+        faceBox.layer.opacity = 0.0
+        
+        return faceBox
+    }
+    
+    func clearFaceBoxes(reuseCount:Int) {
+        
+        for (index,faceBox) in faceBoxes.enumerated()  {
+            if (reuseFaceBoxes.count >= reuseCount) {
+                faceBox.removeFromSuperview()
+ 
+            } else {
+                reuseFaceBoxes.append(faceBox)
+            }
+
+        }
+        
+        faceBoxes.removeAll()
+    }
+    
+    func showPreview(previewImage: UIImage) {
+        
+        analyzePreviewImageView.image = previewImage
+        
+        analyzePreviewImageView.isHidden = false
+        
+        isPreviewShowing = true
+    }
+    
+    func hidePreview() {
+        
+        analyzePreviewImageView.image = nil
+        
+        analyzePreviewImageView.isHidden = true
+        
+        isPreviewShowing = false
+    }
+    
+    
+    func intervalElapsed (interval: TimeInterval, lastUpdate: Date ) -> Bool {
+        
         return (Int(Date().timeIntervalSince(lastUpdate)) >= Int(interval))
     }
 
+    
+    
+    //
+    //  DJIBaseProductDelegate
+    //
+    
+    func productConnected(_ product: DJIBaseProduct?) {
+        
+        NSLog("Product Connected")
+        
+        
+        if (product != nil) {
+            product!.delegate = self
+            
+            camera = self.fetchCamera()
+            
+            if (camera != nil) {
+                camera!.delegate = self
+                
+                VideoPreviewer.instance().start()
+                
+            }
+        }
+    }
+    
+    func productDisconnected() {
+        
+        NSLog("Product Disconnected")
+        
+        camera = nil
+        
+        VideoPreviewer.instance().clearVideoData()
+        VideoPreviewer.instance().close()
+    }
+    
     
     //
     //  DJISDKManagerDelegate
@@ -254,30 +282,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     }
     
     //
-    //  DJICameraDelegate
-    //
-    
-    func camera(_ camera: DJICamera, didUpdate cameraState: DJICameraSystemState) {
-        self.isRecording = cameraState.isRecording
-        self.recordTimeLabel.isHidden = !self.isRecording
-        
-        self.recordTimeLabel.text = formatSeconds(seconds: cameraState.currentVideoRecordingTimeInSeconds)
-        
-        if (self.isRecording == true) {
-            self.recordButton.setTitle("Stop Record", for: UIControlState.normal)
-        } else {
-            self.recordButton.setTitle("Start Record", for: UIControlState.normal)
-        }
-        
-        if (cameraState.mode == DJICameraMode.shootPhoto) {
-            self.recordModeSegmentControl.selectedSegmentIndex = 0
-        } else {
-            self.recordModeSegmentControl.selectedSegmentIndex = 1
-        }
-        
-    }
-    
-    //
     //  DJIVideoFeedListener
     //
     
@@ -292,65 +296,24 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         VideoPreviewer.instance().push(videoBuffer, length: Int32(videoData.length))
         
-        analyze()
+        detectFacesRealTime()
+        
     }
     
+   
     //
     //  IBAction Methods
     //    
     
     
-    @IBAction func captureAction(_ sender: UIButton) {
-       
-        if (camera != nil) {
-            camera.setMode(DJICameraMode.shootPhoto, withCompletion: { (error) in
-                
-                if (error != nil) {
-                    NSLog("Set Photo Mode Error: " + String(describing: error))
-                }
-            
-                self.camera.startShootPhoto(completion: { (error) in
-                    if (error != nil) {
-                        NSLog("Shoot Photo Mode Error: " + String(describing: error))
-                    }
-                })
-            })
-        }
-    }
-    
-    @IBAction func recordAction(_ sender: UIButton) {
-        
-        if (camera != nil) {
-            if (self.isRecording) {
-                camera.stopRecordVideo(completion: { (error) in
-                    if (error != nil) {
-                        NSLog("Stop Record Video Error: " + String(describing: error))
-                    }
-                })
-            } else {
-                camera.setMode(DJICameraMode.recordVideo,  withCompletion: { (error) in
-                    
-                    self.camera.startRecordVideo(completion: { (error) in
-                        if (error != nil) {
-                            NSLog("Stop Record Video Error: " + String(describing: error))
-                        }
-                    })
-                })
-            }
-        }
-    }
-    
     @IBAction func analyzeAction(_ sender: UIButton) {
-        isAnalyzing = !isAnalyzing
-        
-        if (self.isAnalyzing == true) {
-            self.analyzeButton.setTitle("Stop Analyzing", for: UIControlState.normal)
-            self.logLabel.isHidden = false
-        } else {
-            self.analyzeButton.setTitle("Analyze", for: UIControlState.normal)
-            self.logLabel.text = ""
-            self.logLabel.isHidden = true
+        if (isPreviewShowing) {
+            analyzeButton.setTitle("Analyze",  for: UIControlState.normal)
 
+            hidePreview()
+        } else {
+            analyzeButton.setTitle("< Back", for: UIControlState.normal)
+            analyzeFaces()
         }
 
     }
@@ -373,22 +336,5 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         }
     }
     
-    
-    // MARK: - AnalyzeImageDelegate
-    
-    func finishedGeneratingObject(_ analyzeImageObject: AnalyzeImage.AnalyzeImageObject) {
-        
-        // Here you could do more with this object. It for instance contains the recognized emotions that weren't available before.
-        print(analyzeImageObject)
-        
-//        DispatchQueue.main.async(execute: {
-//            
-//            if ((analyzeImageObject.faces?.count)! > 0) {
-//                self.logLabel.text = analyzeImageObject.faces?[0].emotion
-//            }
-//        })
-        
-    }
-
 
 }

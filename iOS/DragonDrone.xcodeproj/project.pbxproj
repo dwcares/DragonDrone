@@ -9,14 +9,10 @@
 /* Begin PBXBuildFile section */
 		983E2B7F1ED89099001ECE04 /* VideoPreviewer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B5E95C1EC4D72D00A66949 /* VideoPreviewer.framework */; };
 		983E2B811ED890D8001ECE04 /* VideoPreviewer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 98B5E95C1EC4D72D00A66949 /* VideoPreviewer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9840DB1D1ECB960800F328F2 /* AnalyzeImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9840DB1C1ECB960800F328F2 /* AnalyzeImage.swift */; };
-		9840DB1F1ECB962200F328F2 /* RecognizeDomainSpecificContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9840DB1E1ECB962200F328F2 /* RecognizeDomainSpecificContent.swift */; };
-		9840DB211ECB962D00F328F2 /* TagImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9840DB201ECB962D00F328F2 /* TagImage.swift */; };
-		9840DB231ECB963400F328F2 /* JSONNSDataExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9840DB221ECB963400F328F2 /* JSONNSDataExtension.swift */; };
-		9840DB251ECB963900F328F2 /* CognitiveServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9840DB241ECB963900F328F2 /* CognitiveServices.swift */; };
 		98762A0C1ED8961E00338431 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 98762A081ED8961E00338431 /* LaunchScreen.storyboard */; };
 		98762A0D1ED8961E00338431 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 98762A0A1ED8961E00338431 /* Main.storyboard */; };
 		98B817F71EBB7C2200D9EBA1 /* FPVViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B817F61EBB7C2200D9EBA1 /* FPVViewController.swift */; };
+		98E2239A1EE05D7C00B13014 /* FaceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E223991EE05D7C00B13014 /* FaceAPI.swift */; };
 		A435F1FB1E8BD61B00D58045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A435F1F91E8BD61B00D58045 /* Assets.xcassets */; };
 		A435F1FC1E8BD61B00D58045 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A435F1FA1E8BD61B00D58045 /* Info.plist */; };
 		A435F2221E8BDBF200D58045 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A435F1FD1E8BD62B00D58045 /* AppDelegate.swift */; };
@@ -59,14 +55,10 @@
 		2FDF3BF12E96C719A1237BEA /* Pods-DragonDrone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DragonDrone.release.xcconfig"; path = "Pods/Target Support Files/Pods-DragonDrone/Pods-DragonDrone.release.xcconfig"; sourceTree = "<group>"; };
 		4B0C6B02B8D1383630F1B67E /* Pods-iOS-FPVDemo-Swift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOS-FPVDemo-Swift.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iOS-FPVDemo-Swift/Pods-iOS-FPVDemo-Swift.debug.xcconfig"; sourceTree = "<group>"; };
 		86985CC91E834EC200577EC7 /* DragonDrone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DragonDrone.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9840DB1C1ECB960800F328F2 /* AnalyzeImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AnalyzeImage.swift; path = "DragonDrone/Cognitive Services/AnalyzeImage.swift"; sourceTree = SOURCE_ROOT; };
-		9840DB1E1ECB962200F328F2 /* RecognizeDomainSpecificContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecognizeDomainSpecificContent.swift; path = "DragonDrone/Cognitive Services/RecognizeDomainSpecificContent.swift"; sourceTree = SOURCE_ROOT; };
-		9840DB201ECB962D00F328F2 /* TagImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TagImage.swift; path = "DragonDrone/Cognitive Services/TagImage.swift"; sourceTree = SOURCE_ROOT; };
-		9840DB221ECB963400F328F2 /* JSONNSDataExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JSONNSDataExtension.swift; path = "DragonDrone/Cognitive Services/JSONNSDataExtension.swift"; sourceTree = SOURCE_ROOT; };
-		9840DB241ECB963900F328F2 /* CognitiveServices.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CognitiveServices.swift; path = "DragonDrone/Cognitive Services/CognitiveServices.swift"; sourceTree = SOURCE_ROOT; };
 		98762A091ED8961E00338431 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = DragonDrone/Base.lproj/LaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
 		98762A0B1ED8961E00338431 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = DragonDrone/Base.lproj/Main.storyboard; sourceTree = SOURCE_ROOT; };
 		98B817F61EBB7C2200D9EBA1 /* FPVViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FPVViewController.swift; path = DragonDrone/FPVViewController.swift; sourceTree = SOURCE_ROOT; };
+		98E223991EE05D7C00B13014 /* FaceAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceAPI.swift; sourceTree = SOURCE_ROOT; };
 		A435F1F91E8BD61B00D58045 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = DragonDrone/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		A435F1FA1E8BD61B00D58045 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DragonDrone/Info.plist; sourceTree = SOURCE_ROOT; };
 		A435F1FD1E8BD62B00D58045 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DragonDrone/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
@@ -133,11 +125,7 @@
 		9840DB171ECB95DC00F328F2 /* Cognitive Services */ = {
 			isa = PBXGroup;
 			children = (
-				9840DB221ECB963400F328F2 /* JSONNSDataExtension.swift */,
-				9840DB1E1ECB962200F328F2 /* RecognizeDomainSpecificContent.swift */,
-				9840DB201ECB962D00F328F2 /* TagImage.swift */,
-				9840DB1C1ECB960800F328F2 /* AnalyzeImage.swift */,
-				9840DB241ECB963900F328F2 /* CognitiveServices.swift */,
+				98E223991EE05D7C00B13014 /* FaceAPI.swift */,
 			);
 			name = "Cognitive Services";
 			sourceTree = "<group>";
@@ -305,12 +293,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A435F2221E8BDBF200D58045 /* AppDelegate.swift in Sources */,
-				9840DB251ECB963900F328F2 /* CognitiveServices.swift in Sources */,
 				98B817F71EBB7C2200D9EBA1 /* FPVViewController.swift in Sources */,
-				9840DB1F1ECB962200F328F2 /* RecognizeDomainSpecificContent.swift in Sources */,
-				9840DB1D1ECB960800F328F2 /* AnalyzeImage.swift in Sources */,
-				9840DB231ECB963400F328F2 /* JSONNSDataExtension.swift in Sources */,
-				9840DB211ECB962D00F328F2 /* TagImage.swift in Sources */,
+				98E2239A1EE05D7C00B13014 /* FaceAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
