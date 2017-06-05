@@ -11,11 +11,11 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 - [x] P1: FPV view of done
 - [x] P1: Showing successful detection
 - [x] P2: Local Face detection
-- [ ] P2: Draw boxes around identified faces
+- [x] P2: Draw boxes around identified faces
 - [x] P3: Draw boxes around all detected faces
 - [x] P1: Show success the app
-- [ ] P2: Turn lights on/off when white walker found
-- [ ] P1: Test AirServer with different networks
+- [x] P2: Turn lights on/off when white walker found
+- [x] P1: Test AirServer with different networks
 - [x] P1: Demoable -> AirServer
 - [x] P1: Take off and land manually - using controller
 
