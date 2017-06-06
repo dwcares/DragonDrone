@@ -3,41 +3,38 @@ package com.bsherwin.MavicDragon;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.shapes.Shape;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.TextureView.SurfaceTextureListener;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
-import dji.common.camera.SettingsDefinitions;
-import dji.common.camera.SystemState;
-import dji.common.error.DJIError;
 import dji.common.product.Model;
-import dji.common.util.CommonCallbacks;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
@@ -54,8 +51,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     protected TextureView mVideoSurface = null;
     protected TextView mText = null;
     private Button mCaptureBtn;
-
     private Bitmap mBitmap;
+
+    private String cognitiveServicesBaseUrl = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0";
+    private String cognitiveServicesAPIKey = "";
+    private String cognitiveServicesPersonGroup = "sherwin";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,14 +199,115 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     }
 
     private void analyzeFeed(){
+        String data;
         mBitmap = this.mVideoSurface.getBitmap();
         try {
             String result = new CSFaceDetectTask().execute().get();
-            mText.setText(result);
-        } catch (InterruptedException e) {
+            if (result == "failed") {
+                mText.setText("No Face Detected");
+                return;
+            }
+            data = "Face Detected...\nIdentifying...";
+
+            try
+            {
+                JSONArray faceArray = new JSONArray(result);
+                JSONObject faceData = faceArray.getJSONObject(0);
+                String faceId = faceData.getString("faceId");
+                String personId = new CSFaceIdentifyTask().execute(faceId).get();
+                data += "\npersonId: " + personId;
+                if (personId == ""){
+                    mText.setText(data + "\nUnidentified Person");
+                    return;
+                }
+                String personName = new CSFaceGetPersonTask().execute(personId).get();
+                data += "\nFound " + personName;
+            }
+            catch(JSONException e)
+            {
+                mText.setText(data + "\n" + e.toString());
+            }
+            mText.setText(data);
+        }
+        catch (InterruptedException e)
+        {
             e.printStackTrace();
-        } catch (ExecutionException e) {
+        }
+        catch (ExecutionException e)
+        {
             e.printStackTrace();
+        }
+    }
+
+    public class CSFaceGetPersonTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            String personId = strings[0];
+            HttpClient httpclient = new DefaultHttpClient();
+            try {
+                URIBuilder builder = new URIBuilder(cognitiveServicesBaseUrl + "/persongroups/" + cognitiveServicesPersonGroup + "/persons/" + personId);
+                URI uri = builder.build();
+                HttpGet request = new HttpGet(uri);
+                request.setHeader("Ocp-Apim-Subscription-Key", cognitiveServicesAPIKey);
+                HttpResponse response = httpclient.execute(request);
+                HttpEntity entity = response.getEntity();
+
+                if (entity != null) {
+                    result = EntityUtils.toString(entity);
+                }
+
+                JSONObject personData = new JSONObject(result);
+                String personName = personData.getString("name");
+
+                return personName;
+            } catch (Exception e) {
+                return e.toString();
+            }
+        }
+    }
+
+    public class CSFaceIdentifyTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            HttpClient httpclient = new DefaultHttpClient();
+            try {
+                URIBuilder builder = new URIBuilder(cognitiveServicesBaseUrl + "/identify");
+                URI uri = builder.build();
+                HttpPost request = new HttpPost(uri);
+
+                request.setHeader("Content-Type", "application/json");
+                request.setHeader("Ocp-Apim-Subscription-Key", cognitiveServicesAPIKey);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("personGroupId", cognitiveServicesPersonGroup);
+                JSONArray faceIds = new JSONArray();
+                faceIds.put(strings[0]);
+                jsonRequest.put("faceIds", faceIds);
+                request.setEntity(new StringEntity(jsonRequest.toString()));
+
+                HttpResponse response = httpclient.execute(request);
+                HttpEntity entity = response.getEntity();
+
+                if (entity != null) {
+                    result = EntityUtils.toString(entity);
+                }
+
+                JSONArray personData = new JSONArray(result);
+                JSONObject faceMatch = personData.getJSONObject(0);
+                JSONArray candidates = faceMatch.getJSONArray("candidates");
+                JSONObject candidate = candidates.getJSONObject(0);
+
+                String personId = candidate.getString("personId");
+
+                return personId;
+
+
+            } catch (Exception e) {
+                return "";
+            }
         }
     }
 
@@ -216,18 +317,16 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         protected String doInBackground(String... params) {
             String result = "";
             HttpClient httpclient = new DefaultHttpClient();
-            URL url;
-            HttpURLConnection urlConnection = null;
             try {
-                URIBuilder builder = new URIBuilder("https://westus.api.cognitive.microsoft.com/face/v1.0/detect");
-                builder.setParameter("returnFaceId", "false");
-                builder.setParameter("returnFaceLandmarks", "true");
-                //builder.setParameter("returnFaceAttributes", "age,gender,smile,emotion");
+                URIBuilder builder = new URIBuilder(cognitiveServicesBaseUrl + "/detect");
+                builder.setParameter("returnFaceId", "true");
+                builder.setParameter("returnFaceLandmarks", "false");
+
                 URI uri = builder.build();
                 HttpPost request = new HttpPost(uri);
 
                 request.setHeader("Content-Type", "application/octet-stream");
-                request.setHeader("Ocp-Apim-Subscription-Key", "");
+                request.setHeader("Ocp-Apim-Subscription-Key", cognitiveServicesAPIKey);
 
                 ByteArrayOutputStream output = new ByteArrayOutputStream();
                 mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);

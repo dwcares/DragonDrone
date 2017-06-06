@@ -7,7 +7,7 @@ The Android version of a Microsoft Cognitive Services computer vision demo built
 - [ ] P1: Facial verification
 - [ ] P1: Manual trigger for verify (button on controller, or in app)
 - [ ] P3: Real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
-- [ ] P1: FPV view of done
+- [X] P1: FPV view of done
 - [ ] P1: Showing successful detection
 - [ ] P2: Local Face detection
 - [ ] P2: Draw boxes around identified faces

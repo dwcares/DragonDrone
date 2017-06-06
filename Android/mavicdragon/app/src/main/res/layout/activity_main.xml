@@ -29,18 +29,6 @@
      </LinearLayout>
 
     <TextView
-        android:id="@+id/timer"
-        android:layout_width="150dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginTop="23dp"
-        android:gravity="center"
-        android:textColor="#ffffff"
-        android:layout_alignTop="@+id/video_previewer_surface"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
         android:id="@+id/analysis"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
