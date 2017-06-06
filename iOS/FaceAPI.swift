@@ -340,11 +340,9 @@ class FaceAPI: NSObject {
         }
     }
     
-    static func identifyFaces(_ faces: [Face], personGroupId: String, personToFind: String, completion: @escaping (_ foundFace: Face) -> Void) {
+    static func identifyFaces(_ faces: [Face], personGroupId: String, completion: @escaping (_ error: Error?, _ foundFaces: [Face]?) -> Void) {
         
-        
-        print("Looking for", personToFind)
-        print("in group", personGroupId)
+        print("Looking in group", personGroupId)
         var faceIds = [String]()
         for face in faces {
             faceIds.append(face.faceId)
@@ -355,6 +353,9 @@ class FaceAPI: NSObject {
             case .success(let json):
                 let jsonArray = json as! JSONArray
                 
+                var foundFaces = faces
+
+                
                 for item in jsonArray {
                     var face = item as! JSONDictionary
                     
@@ -362,28 +363,23 @@ class FaceAPI: NSObject {
                     let candidates = face["candidates"] as! JSONArray
                     
                     for candidate in candidates {
-                        print("Found person: \(candidate["personId"] as! String)")
-                        
-                        if candidate["personId"] as! String == personToFind {
-                            // find face information based on faceId
-                            for face in faces {
-                                if face.faceId == faceId {
-                                    var foundFace = face
-                                    
-                                    foundFace.faceIdentity = candidate["personId"] as! String
-                                    foundFace.faceIdentityConfidence = candidate["confidence"] as! Float
-                                    
-                                    print("Found face: \(face)")
-                                    completion(foundFace)
-                                }
+     
+                        // find face information based on faceId
+                        for (index,face) in faces.enumerated() {
+                            if face.faceId == faceId {
+                                foundFaces[index].faceIdentity = candidate["personId"] as? String
+                                foundFaces[index].faceIdentityConfidence = candidate["confidence"] as? Float
+                                
+                                print("Found face: \(face)")
                             }
-                            
                         }
                     }
-                    
                 }
+                
+                completion(nil, foundFaces)
             case .failure(let error):
                 print("Identifying faces error - ", error)
+                completion(error, nil)
                 break
             }
         }

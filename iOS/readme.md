@@ -7,7 +7,6 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 ### Phase 0
 - [x] P1: Facial verification
 - [x] P1: Manual trigger for verify (button on controller, or in app)
-- [ ] P3: Real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 - [x] P1: FPV view of done
 - [x] P1: Showing successful detection
 - [x] P2: Local Face detection
@@ -18,6 +17,9 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 - [x] P1: Test AirServer with different networks
 - [x] P1: Demoable -> AirServer
 - [x] P1: Take off and land manually - using controller
+- [x] P2: Scan animation
+- [ ] P1: Show identified person name
+- [ ] P3: Real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 
 ### Phase 1
 - [ ] P1: take off/land in app
