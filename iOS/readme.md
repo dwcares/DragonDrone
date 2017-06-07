@@ -30,7 +30,7 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 - [ ] P2: Real-time identify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 - [ ] P2: emotion of found person (e.g. Kalhisi is mad!)
 
-#### Phase 2
+### Phase 2
 - [ ] Record a crazy demo video of drone doing cool stuff in the wild
 ---
 
