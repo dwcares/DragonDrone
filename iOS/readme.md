@@ -1,6 +1,10 @@
 # DragonDrone: iOS
 The iOS version of the Microsoft Cognitive Services computer vision demo built for a DJI Mavic Pro Drone
 
+![Logo](../images/logo.png)
+
+## Demo
+![Logo](../images/demo.gif)
 ---
 ## Requirements
 
@@ -19,14 +23,14 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 - [x] P1: Take off and land manually - using controller
 - [x] P2: Scan animation
 - [x] P1: Show identified person name
-- [ ] P3: Real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 
 ### Phase 1
 - [ ] P1: take off/land in app
 - [ ] P1: scan side to side to find walker
+- [ ] P2: Real-time identify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 - [ ] P2: emotion of found person (e.g. Kalhisi is mad!)
 
-#### Phase 2
+### Phase 2
 - [ ] Record a crazy demo video of drone doing cool stuff in the wild
 ---
 
