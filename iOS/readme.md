@@ -18,7 +18,7 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 - [x] P1: Demoable -> AirServer
 - [x] P1: Take off and land manually - using controller
 - [x] P2: Scan animation
-- [ ] P1: Show identified person name
+- [x] P1: Show identified person name
 - [ ] P3: Real-time verify using [queue](https://docs.microsoft.com/en-us/azure/cognitive-services/Computer-vision/vision-api-how-to-topics/howtoanalyzevideo_vision)
 
 ### Phase 1
@@ -86,8 +86,6 @@ installed.
 This project requires you to have API keys for the DJI drone and the Microsoft Cognitive Services APIs that it uses. Set them in Info.plist
 * DJISDKAppKey - [DJI SDK API Key](https://developer.dji.com/)
 * Microsoft Cognitive Services - [Microsoft Cognitive Services API Keys](https://azure.microsoft.com/en-us/services/cognitive-services/)
-    - ComputerVisionKey
-    - EmotionKey
     - FaceKey
 
 ## License
