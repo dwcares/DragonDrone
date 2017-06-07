@@ -103,7 +103,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                     self.drawDetectedFaces(faces: faces, parentView: self.fpvView)
                 })
 
-                FaceAPI.identifyFaces(faces, personGroupId: self.faceGroupID) { (error, foundFaces) in
+                FaceAPI.identifyFaceWithNames(faces, personGroupId: self.faceGroupID) { (error, foundFaces) in
                     
                     if (foundFaces != nil) {
                         DispatchQueue.main.async(execute: {
@@ -206,7 +206,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
             let color = face.faceIdentity != nil ? UIColor.red.cgColor : UIColor.yellow.cgColor
             
-            addFaceBoxToView(frame: faceRect, view: parentView, color: color, labelText: face.faceIdentity)
+            addFaceBoxToView(frame: faceRect, view: parentView, color: color, labelText: face.faceIdentityName)
         }
     }
     
@@ -450,15 +450,15 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     @IBAction func analyzeAction(_ sender: UIButton) {
       
-        // DEBUG: Use local image instead of drone image
-        //
-        //        DispatchQueue.main.async(execute: {
-        //            self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
-        //            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
-        //
-        //            self.analyzeButton.setTitle("Back", for: UIControlState.normal)
-        //        })
-        //        return
+    //         DEBUG: Use local image instead of drone image
+    //        
+    //                DispatchQueue.main.async(execute: {
+    //                    self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
+    //                    self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
+    //        
+    //                    self.analyzeButton.setTitle("Back", for: UIControlState.normal)
+    //                })
+    //                return
 
         if (isPreviewShowing) {
             

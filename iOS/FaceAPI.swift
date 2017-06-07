@@ -16,6 +16,7 @@ struct Face {
     let width: Int
     let top: Int
     let left: Int
+    var faceIdentityName: String?
     var faceIdentity: String?
     var faceIdentityConfidence: Float?
 }
@@ -116,6 +117,42 @@ class FaceAPI: NSObject {
         }) 
         task.resume()
     }
+    
+    // Get person
+    static func getPerson(_ personGroupId: String, personId: String, completion: @escaping (_ result: FaceAPIResult<JSON, FaceError>) -> Void) {
+        
+        let url = "\(FaceAPI.ServiceURL)/face/v1.0/persongroups/\(personGroupId)/persons/\(personId)"
+    
+        let request = NSMutableURLRequest(url: URL(string: url)!)
+        
+        
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(FaceAPI.FaceKey, forHTTPHeaderField: "Ocp-Apim-Subscription-Key")
+        
+        let task = URLSession.shared.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) in
+            
+            if let nsError = error {
+                completion(.failure(FaceError.unexpectedError(nsError: nsError as NSError)))
+            }
+            else {
+                let httpResponse = response as! HTTPURLResponse
+                let statusCode = httpResponse.statusCode
+                
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments)
+                    if statusCode == 200 {
+                        completion(.success(json as JSON))
+                    }
+                }
+                catch {
+                    completion(.failure(FaceError.jSonSerializationError))
+                }
+            }
+        })
+        task.resume()
+    }
+
 
     
     // Upload face
@@ -259,7 +296,7 @@ class FaceAPI: NSObject {
     
     
     // Identify faces in people group
-    static func identify(faces faceIds: [String], personGroupId: String, completion: @escaping (_ result: FaceAPIResult<JSON, FaceError>) -> Void) {
+    static func identify(faces faceIds: [String], personGroupId: String, maxCandidates: Int = 1, confidenceThreshold: Float = 0.7, completion: @escaping (_ result: FaceAPIResult<JSON, FaceError>) -> Void) {
 
         let url = "\(FaceAPI.ServiceURL)/face/v1.0/identify"
         let request = NSMutableURLRequest(url: URL(string: url)!)
@@ -270,8 +307,8 @@ class FaceAPI: NSObject {
         
         
         let json: [String: AnyObject] = ["personGroupId": personGroupId as AnyObject,
-                                         "maxNumOfCandidatesReturned": 1 as AnyObject,
-                                         "confidenceThreshold": 0.7 as AnyObject,
+                                         "maxNumOfCandidatesReturned": maxCandidates as AnyObject,
+                                         "confidenceThreshold": confidenceThreshold as AnyObject,
                                          "faceIds": faceIds as AnyObject
         ]
         
@@ -324,7 +361,9 @@ class FaceAPI: NSObject {
                                             height: rectangle["top"] as! Int,
                                             width: rectangle["width"] as! Int,
                                             top: rectangle["top"] as! Int,
-                                            left: rectangle["left"] as! Int, faceIdentity: nil, faceIdentityConfidence: nil)
+                                            left: rectangle["left"] as! Int,
+                                            faceIdentityName: nil,
+                                            faceIdentity: nil, faceIdentityConfidence: nil)
                     
                     print("Found face \(detectedFace)")
 
@@ -340,6 +379,74 @@ class FaceAPI: NSObject {
         }
     }
     
+    static func identifyFaceWithNames(_ faces: [Face], personGroupId: String, completion: @escaping (_ error: Error?, _ foundFaceNames: [Face]?) ->Void ) {
+        
+        FaceAPI.identifyFaces(faces, personGroupId: personGroupId) { (error, foundFaces) in
+            
+            if (foundFaces != nil) {
+                getFacesWithNamesFromFacesWithIds(faces: foundFaces!, personGroupId: personGroupId) { (error, facesWithNames) in
+                    
+                    completion(nil, facesWithNames!)
+                    
+                }
+                
+                
+            } else {
+                DispatchQueue.main.async(execute: {
+                    if (error != nil) {
+                        print(error!)
+                    }
+                    completion(error, nil)
+
+                })
+            }
+        }
+    }
+    
+    static func getFacesWithNamesFromFacesWithIds(faces: [Face], personGroupId: String, completion: @escaping (_ error: Error?, _ foundFaceNames: [Face]?) -> Void) {
+        var foundFaceNames = faces
+        
+        let personDispatchGroup = DispatchGroup()
+        
+        for (index,face) in faces.enumerated() {
+    
+            if (face.faceIdentity != nil) {
+                
+                personDispatchGroup.enter()
+                
+                getPerson(personGroupId, personId: face.faceIdentity!) { (result) in
+                    switch result {
+                        case .success(let json):
+                            
+                        var person = json as! JSONDictionary
+                
+                        let personName = person["name"] as! String
+                        
+                        foundFaceNames[index].faceIdentityName = personName
+                        personDispatchGroup.leave()
+                        break
+                       
+                        case .failure(let error):
+                        print("Find person  error - ", error)
+                        personDispatchGroup.leave()
+                        break
+                        
+                     }
+                }
+                
+                
+            }
+        }
+        
+        personDispatchGroup.notify(queue: .main) {
+            print("Finished all people requests.")
+            
+            completion(nil, foundFaceNames)
+        }
+    
+    }
+
+
     static func identifyFaces(_ faces: [Face], personGroupId: String, completion: @escaping (_ error: Error?, _ foundFaces: [Face]?) -> Void) {
         
         print("Looking in group", personGroupId)
@@ -348,7 +455,7 @@ class FaceAPI: NSObject {
             faceIds.append(face.faceId)
         }
         
-        FaceAPI.identify(faces: faceIds, personGroupId: personGroupId) { (result) in
+        FaceAPI.identify(faces: faceIds, personGroupId: personGroupId, maxCandidates: 4, confidenceThreshold: 0.5) { (result) in
             switch result {
             case .success(let json):
                 let jsonArray = json as! JSONArray
@@ -384,7 +491,7 @@ class FaceAPI: NSObject {
             }
         }
     }
-    
+
     
     static func getFaceKey() -> String{
         
