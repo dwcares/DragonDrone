@@ -466,10 +466,10 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
 //    //  DEBUG: Use local image instead of drone image
 //        
 //        DispatchQueue.main.async(execute: {
-//            self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
-//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
+//            self.showPreview(previewImage: #imageLiteral(resourceName: "smaller"))
+//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smaller"))
 //
-//            self.analyzeButton.setTitle("Back", for: UIControlState.normal)
+//            self.analyzeButton.isHidden = true
 //        })
 //        return
 
