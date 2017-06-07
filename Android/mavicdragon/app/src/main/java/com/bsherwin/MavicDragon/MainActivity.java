@@ -3,8 +3,6 @@ package com.bsherwin.MavicDragon;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.shapes.Shape;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -75,7 +73,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 }
             }
         };
-
     }
 
     protected void onProductChange() {
@@ -156,6 +153,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
         if (mCodecManager == null) {
             mCodecManager = new DJICodecManager(this, surface, width, height);
         }
+
     }
 
     @Override
@@ -208,7 +206,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 return;
             }
             data = "Face Detected...\nIdentifying...";
-
             try
             {
                 JSONArray faceArray = new JSONArray(result);
