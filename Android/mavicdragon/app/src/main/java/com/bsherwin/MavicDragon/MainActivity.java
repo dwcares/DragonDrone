@@ -38,7 +38,7 @@ import dji.sdk.camera.Camera;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 
-public class MainActivity extends Activity implements SurfaceTextureListener,OnClickListener{
+public class MainActivity extends Activity implements SurfaceTextureListener,OnClickListener,OnCSTaskCompleted{
 
     private static final String TAG = MainActivity.class.getName();
     protected VideoFeeder.VideoDataCallback mReceivedVideoDataCallBack = null;
@@ -54,6 +54,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     private String cognitiveServicesBaseUrl = "https://westcentralus.api.cognitive.microsoft.com/face/v1.0";
     private String cognitiveServicesAPIKey = "";
     private String cognitiveServicesPersonGroup = "sherwin";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,46 +198,56 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
     }
 
     private void analyzeFeed(){
-        String data;
         mBitmap = this.mVideoSurface.getBitmap();
-        try {
-            String result = new CSFaceDetectTask().execute().get();
-            if (result == "failed") {
-                mText.setText("No Face Detected");
-                return;
-            }
-            data = "Face Detected...\nIdentifying...";
-            try
-            {
-                JSONArray faceArray = new JSONArray(result);
-                JSONObject faceData = faceArray.getJSONObject(0);
-                String faceId = faceData.getString("faceId");
-                String personId = new CSFaceIdentifyTask().execute(faceId).get();
-                data += "\npersonId: " + personId;
-                if (personId == ""){
-                    mText.setText(data + "\nUnidentified Person");
-                    return;
-                }
-                String personName = new CSFaceGetPersonTask().execute(personId).get();
-                data += "\nFound " + personName;
-            }
-            catch(JSONException e)
-            {
-                mText.setText(data + "\n" + e.toString());
-            }
-            mText.setText(data);
+        mText.setText("Analyzing");
+        CSFaceDetectTask detectTask = new CSFaceDetectTask(this);
+        detectTask.execute();
+    }
+
+    @Override
+    public void onDetectCompleted(String result) {
+        if (result == "failed") {
+            mText.setText("No Face Detected");
+            return;
         }
-        catch (InterruptedException e)
+        mText.append("\nFace Detected...\nIdentifying...");
+        try
         {
-            e.printStackTrace();
+            JSONArray faceArray = new JSONArray(result);
+            JSONObject faceData = faceArray.getJSONObject(0);
+            String faceId = faceData.getString("faceId");
+            CSFaceIdentifyTask identifyTask = new CSFaceIdentifyTask(this);
+            identifyTask.execute(faceId);
         }
-        catch (ExecutionException e)
+        catch(JSONException e)
         {
-            e.printStackTrace();
+            mText.append("\n" + e.toString());
         }
     }
 
+    @Override
+    public void onIndentifyCompleted(String personId) {
+        mText.append("\npersonId: " + personId);
+        if (personId == ""){
+            mText.append("\nUnidentified Person");
+            return;
+        }
+        CSFaceGetPersonTask getPersonTask = new CSFaceGetPersonTask(this);
+        getPersonTask.execute(personId);
+    }
+
+    @Override
+    public void onGetPersonCompleted(String personName) {
+        mText.append("\nFound " + personName);
+    }
+
     public class CSFaceGetPersonTask extends AsyncTask<String, Void, String> {
+        private OnCSTaskCompleted listener;
+
+        public CSFaceGetPersonTask(OnCSTaskCompleted listener) {
+            this.listener = listener;
+        }
+
         @Override
         protected String doInBackground(String... strings) {
             String result = "";
@@ -262,9 +273,19 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 return e.toString();
             }
         }
+
+        @Override
+        protected void onPostExecute(String result) {
+            listener.onGetPersonCompleted(result.toString());
+        }
     }
 
     public class CSFaceIdentifyTask extends AsyncTask<String, Void, String> {
+        private OnCSTaskCompleted listener;
+
+        public CSFaceIdentifyTask(OnCSTaskCompleted listener) {
+            this.listener = listener;
+        }
 
         @Override
         protected String doInBackground(String... strings) {
@@ -298,21 +319,28 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 JSONObject candidate = candidates.getJSONObject(0);
 
                 String personId = candidate.getString("personId");
-
                 return personId;
-
-
             } catch (Exception e) {
                 return "";
             }
         }
+
+        @Override
+        protected void onPostExecute(String result) {
+            listener.onIndentifyCompleted(result.toString());
+        }
     }
 
     public class CSFaceDetectTask extends AsyncTask<String, Void, String> {
+        private OnCSTaskCompleted listener;
+        private String result = "";
+
+        public CSFaceDetectTask(OnCSTaskCompleted listener){
+            this.listener=listener;
+        }
 
         @Override
         protected String doInBackground(String... params) {
-            String result = "";
             HttpClient httpclient = new DefaultHttpClient();
             try {
                 URIBuilder builder = new URIBuilder(cognitiveServicesBaseUrl + "/detect");
@@ -336,14 +364,16 @@ public class MainActivity extends Activity implements SurfaceTextureListener,OnC
                 if (entity != null) {
                     result = EntityUtils.toString(entity);
                 }
-
-                return result;
-
-
             } catch (Exception e) {
                 e.printStackTrace();
                 return "failed";
             }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            listener.onDetectCompleted(result.toString());
         }
     }
 
