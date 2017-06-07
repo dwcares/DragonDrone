@@ -103,7 +103,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                     self.drawDetectedFaces(faces: faces, parentView: self.fpvView)
                 })
 
-                FaceAPI.identifyFaces(faces, personGroupId: self.faceGroupID) { (error, foundFaces) in
+                FaceAPI.identifyFaceWithNames(faces, personGroupId: self.faceGroupID) { (error, foundFaces) in
                     
                     if (foundFaces != nil) {
                         DispatchQueue.main.async(execute: {
@@ -206,7 +206,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
             let color = face.faceIdentity != nil ? UIColor.red.cgColor : UIColor.yellow.cgColor
             
-            addFaceBoxToView(frame: faceRect, view: parentView, color: color, labelText: face.faceIdentity)
+            addFaceBoxToView(frame: faceRect, view: parentView, color: color, labelText: face.faceIdentityName)
         }
     }
     
@@ -227,20 +227,20 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
       
         faceBoxes.append(faceBox)
-        
 
+    
         
         UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
             faceBox.layer.borderColor = color
             faceBox.layer.opacity = 0.6
             faceBox.frame = frame
             
+         
+            
+        }, completion: { (success:Bool) in
             if (withAnimation) {
                 self.startFaceBoxScanAnimation(faceBox: faceBox)
             }
-            
-        }, completion: { (success:Bool) in
-            
         })
         
     }
@@ -263,24 +263,37 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         let scanView = UIView(frame: scanFrame)
         scanView.layer.backgroundColor = UIColor.yellow.cgColor
         scanView.layer.opacity = 0.5
-
-        faceBox.addSubview(scanView)
         
-        UIView.animate(withDuration: 2, delay: 0.0, options: .curveEaseInOut, animations: {
-            scanView.layer.opacity = 1
+        let scanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
+        let scanView2 = UIView(frame: scanFrame2)
+        scanView2.layer.backgroundColor = UIColor.yellow.cgColor
+        scanView2.layer.opacity = 0.5
+    
+        faceBox.addSubview(scanView)
+        faceBox.addSubview(scanView2)
+        
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
             
+            scanView.layer.opacity = 1
             let endScanFrame = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-
             scanView.frame = endScanFrame
+            
+            scanView2.layer.opacity = 1
+            let endScanFrame2 = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
+            scanView2.frame = endScanFrame2
             
         }, completion: { (success:Bool) in
             
-            UIView.animate(withDuration: 1, delay: 0.0, options: .curveEaseInOut, animations: {
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+                
                 scanView.layer.opacity = 0
-                
                 let endScanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-                
                 scanView.frame = endScanFrame
+                
+                scanView2.layer.opacity = 0
+                let endScanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
+                scanView2.frame = endScanFrame2
+
                 
             }, completion: { (success:Bool) in
                 scanView.removeFromSuperview()
@@ -450,15 +463,15 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     @IBAction func analyzeAction(_ sender: UIButton) {
       
-        // DEBUG: Use local image instead of drone image
-        //
-        //        DispatchQueue.main.async(execute: {
-        //            self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
-        //            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
-        //
-        //            self.analyzeButton.setTitle("Back", for: UIControlState.normal)
-        //        })
-        //        return
+//    //  DEBUG: Use local image instead of drone image
+//        
+//        DispatchQueue.main.async(execute: {
+//            self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
+//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
+//
+//            self.analyzeButton.setTitle("Back", for: UIControlState.normal)
+//        })
+//        return
 
         if (isPreviewShowing) {
             

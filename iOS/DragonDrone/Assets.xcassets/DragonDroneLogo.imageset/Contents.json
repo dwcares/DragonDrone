@@ -2,17 +2,15 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "Logo.png",
+      "filename" : "DragonDrone-clear.pdf",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "Logo@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "Logo@3x.png",
       "scale" : "3x"
     }
   ],
