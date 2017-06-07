@@ -5,6 +5,7 @@
     </device>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -21,6 +22,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <imageView userInteractionEnabled="NO" alpha="0.25" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="DragonDroneLogo" translatesAutoresizingMaskIntoConstraints="NO" id="hyI-Wj-aVc">
+                                <rect key="frame" x="183" y="37" width="300" height="300"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="hyI-Wj-aVc" secondAttribute="height" multiplier="1:1" id="PmF-N7-a11"/>
+                                </constraints>
+                            </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HAG-NF-7rh" customClass="UIButton">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <subviews>
@@ -62,7 +69,6 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                 </subviews>
-                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" button="YES"/>
                                 </accessibility>
@@ -82,11 +88,15 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="0.0086608259007334709" green="0.036258947104215622" blue="0.21991461515426636" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="HAG-NF-7rh" firstAttribute="centerX" secondItem="KIO-0w-lqp" secondAttribute="centerX" id="7PC-eu-dJa"/>
                             <constraint firstItem="HAG-NF-7rh" firstAttribute="centerY" secondItem="KIO-0w-lqp" secondAttribute="centerY" id="IZS-A2-zxV"/>
+                            <constraint firstItem="hyI-Wj-aVc" firstAttribute="centerY" secondItem="KIO-0w-lqp" secondAttribute="centerY" id="JFY-MT-TxR"/>
+                            <constraint firstItem="hyI-Wj-aVc" firstAttribute="height" relation="lessThanOrEqual" secondItem="KIO-0w-lqp" secondAttribute="height" multiplier="4:5" id="Zje-uR-Zrh"/>
                             <constraint firstAttribute="width" secondItem="HAG-NF-7rh" secondAttribute="width" id="aAl-Xa-bIL"/>
+                            <constraint firstItem="hyI-Wj-aVc" firstAttribute="centerX" secondItem="KIO-0w-lqp" secondAttribute="centerX" id="fak-eK-PMp"/>
+                            <constraint firstItem="hyI-Wj-aVc" firstAttribute="width" relation="lessThanOrEqual" secondItem="KIO-0w-lqp" secondAttribute="width" multiplier="4:5" id="pTI-yr-LMK"/>
                             <constraint firstItem="HAG-NF-7rh" firstAttribute="height" secondItem="KIO-0w-lqp" secondAttribute="height" id="txo-55-GZK"/>
                         </constraints>
                     </view>
@@ -104,4 +114,7 @@
             <point key="canvasLocation" x="942.27886056971522" y="-248.80000000000001"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="DragonDroneLogo" width="375" height="375"/>
+    </resources>
 </document>

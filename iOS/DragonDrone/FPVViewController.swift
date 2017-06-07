@@ -263,24 +263,37 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         let scanView = UIView(frame: scanFrame)
         scanView.layer.backgroundColor = UIColor.yellow.cgColor
         scanView.layer.opacity = 0.5
-
+        
+        let scanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
+        let scanView2 = UIView(frame: scanFrame2)
+        scanView2.layer.backgroundColor = UIColor.yellow.cgColor
+        scanView2.layer.opacity = 0.5
+    
         faceBox.addSubview(scanView)
+        faceBox.addSubview(scanView2)
         
         UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
-            scanView.layer.opacity = 1
             
+            scanView.layer.opacity = 1
             let endScanFrame = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-
             scanView.frame = endScanFrame
+            
+            scanView2.layer.opacity = 1
+            let endScanFrame2 = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
+            scanView2.frame = endScanFrame2
             
         }, completion: { (success:Bool) in
             
             UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+                
                 scanView.layer.opacity = 0
-                
                 let endScanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-                
                 scanView.frame = endScanFrame
+                
+                scanView2.layer.opacity = 0
+                let endScanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
+                scanView2.frame = endScanFrame2
+
                 
             }, completion: { (success:Bool) in
                 scanView.removeFromSuperview()
