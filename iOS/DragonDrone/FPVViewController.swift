@@ -227,20 +227,20 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
       
         faceBoxes.append(faceBox)
-        
 
+    
         
         UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
             faceBox.layer.borderColor = color
             faceBox.layer.opacity = 0.6
             faceBox.frame = frame
             
+         
+            
+        }, completion: { (success:Bool) in
             if (withAnimation) {
                 self.startFaceBoxScanAnimation(faceBox: faceBox)
             }
-            
-        }, completion: { (success:Bool) in
-            
         })
         
     }
@@ -266,7 +266,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
 
         faceBox.addSubview(scanView)
         
-        UIView.animate(withDuration: 2, delay: 0.0, options: .curveEaseInOut, animations: {
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
             scanView.layer.opacity = 1
             
             let endScanFrame = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
@@ -275,7 +275,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
         }, completion: { (success:Bool) in
             
-            UIView.animate(withDuration: 1, delay: 0.0, options: .curveEaseInOut, animations: {
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
                 scanView.layer.opacity = 0
                 
                 let endScanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
@@ -450,15 +450,15 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     @IBAction func analyzeAction(_ sender: UIButton) {
       
-    //         DEBUG: Use local image instead of drone image
-    //        
-    //                DispatchQueue.main.async(execute: {
-    //                    self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
-    //                    self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
-    //        
-    //                    self.analyzeButton.setTitle("Back", for: UIControlState.normal)
-    //                })
-    //                return
+//    //  DEBUG: Use local image instead of drone image
+//        
+//        DispatchQueue.main.async(execute: {
+//            self.showPreview(previewImage: #imageLiteral(resourceName: "smallfam"))
+//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smallfam"))
+//
+//            self.analyzeButton.setTitle("Back", for: UIControlState.normal)
+//        })
+//        return
 
         if (isPreviewShowing) {
             
