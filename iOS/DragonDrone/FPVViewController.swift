@@ -13,7 +13,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     var isPreviewShowing = false
     var camera : DJICamera!
     
-    let personToIdentifyID = "fc6ef0d7-4fa3-4d70-88ce-09cfa9b02646"
     let faceGroupID = "dragon_drone"
 
     let analyzeQueue =
@@ -26,7 +25,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     var reuseFaceBoxes:[UIView] = []
     
     @IBOutlet var analyzeButton: UIButton!
-    @IBOutlet var recordModeSegmentControl: UISegmentedControl!
     @IBOutlet var fpvView: UIView!
     @IBOutlet var logLabel: UILabel!
   
@@ -103,7 +101,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                     self.drawDetectedFaces(faces: faces, parentView: self.fpvView)
                 })
 
-                FaceAPI.identifyFaceWithNames(faces, personGroupId: self.faceGroupID) { (error, foundFaces) in
+                FaceAPI.identifyFaceWithNames(faces, personGroupId: FaceAPI.FaceGroupID) { (error, foundFaces) in
                     
                     if (foundFaces != nil) {
                         DispatchQueue.main.async(execute: {
@@ -463,13 +461,11 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     @IBAction func analyzeAction(_ sender: UIButton) {
       
-//    //  DEBUG: Use local image instead of drone image
+//    //  DEBUG: Use local image instead of drone image -- use 16:9 image
 //        
 //        DispatchQueue.main.async(execute: {
 //            self.showPreview(previewImage: #imageLiteral(resourceName: "smaller"))
 //            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smaller"))
-//
-//            self.analyzeButton.isHidden = true
 //        })
 //        return
 
@@ -487,23 +483,4 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
 
     }
     
-    @IBAction func recordModeSegmentChange(_ sender: UISegmentedControl) {
-        
-        if (camera != nil) {
-            if (sender.selectedSegmentIndex == 0) {
-                camera.setMode(DJICameraMode.shootPhoto,  withCompletion: { (error) in
-                    
-                })
-                
-            } else if (sender.selectedSegmentIndex == 1) {
-                camera.setMode(DJICameraMode.recordVideo,  withCompletion: { (error) in
-                    
-                })
-                
-                
-            }
-        }
-    }
-    
-
 }

@@ -43,14 +43,12 @@
 	<string></string>
 	<key>Microsoft Cognitive Services</key>
 	<dict>
-		<key>ComputerVisionKey</key>
-		<string></string>
-		<key>EmotionKey</key>
-		<string></string>
+		<key>ServiceURL</key>
+		<string>https://westus.api.cognitive.microsoft.com</string>
 		<key>FaceKey</key>
 		<string></string>
-		<key>ServiceURL</key>
-		<string>https://api.projectoxford.ai</string>
+		<key>FaceGroupID</key>
+		<string>dragon_drone</string>
 	</dict>
 	<key>UIStatusBarTintParameters</key>
 	<dict>
