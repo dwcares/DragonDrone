@@ -74,10 +74,11 @@ Installing DJI-SDK-iOS (4.0.1)
 Generating Pods project
 Integrating client project
 
-[!] Please close any current Xcode sessions and use `DragonDrone.xcworkspace` for this project from now on.
 Pod installation complete! There is 1 dependency from the Podfile and 1 total pod
 installed.
 ~~~
+
+Close any current Xcode sessions and use `DragonDrone.xcworkspace` for this project from now on.
 
 > **Note**: If you saw "Unable to satisfy the following requirements" issue during pod install, please run the following commands to update your pod repo and install the pod again:
 > 
