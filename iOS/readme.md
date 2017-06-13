@@ -49,7 +49,7 @@ Since this project has been integrated with [DJI iOS SDK CocoaPods](https://coco
 
 **1.** Install CocoaPods
 
-Open Terminal and change to the download project's directory, enter the following command to install it:
+Open Terminal and change to the iOS project directory, enter the following command to install it:
 
 ~~~
 sudo gem install cocoapods
@@ -59,7 +59,7 @@ The process may take a long time, please wait. For further installation instruct
 
 **2.** Install SDK with CocoaPods in the Project
 
-Run the following command in the project's path:
+Run the following command in the project path:
 
 ~~~
 pod install
