@@ -4,6 +4,7 @@
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
@@ -31,6 +32,10 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="HAG-NF-7rh" customClass="UIButton">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <subviews>
+                                    <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="u5L-8m-Vtb" userLabel="iPhone Camera View">
+                                        <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </view>
                                     <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RRD-mb-hQo" userLabel="Analyze Preview">
                                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -48,26 +53,16 @@
                                             <action selector="analyzeAction:" destination="Y5h-KL-TjC" eventType="touchUpInside" id="0fv-Kv-jXc"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="10" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b4I-g0-k4A" userLabel="logLabel">
-                                        <rect key="frame" x="125.5" y="5" width="533.5" height="94.5"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                 </subviews>
                                 <accessibility key="accessibilityConfiguration">
                                     <accessibilityTraits key="traits" button="YES"/>
                                 </accessibility>
                                 <constraints>
                                     <constraint firstItem="eeV-rF-TJZ" firstAttribute="leading" secondItem="HAG-NF-7rh" secondAttribute="leading" id="42j-dV-PfT"/>
-                                    <constraint firstAttribute="trailing" secondItem="b4I-g0-k4A" secondAttribute="trailing" constant="8" id="IPt-TX-GbN"/>
                                     <constraint firstItem="RRD-mb-hQo" firstAttribute="centerX" secondItem="HAG-NF-7rh" secondAttribute="centerX" id="PZ5-pb-1qa"/>
                                     <constraint firstAttribute="bottom" secondItem="eeV-rF-TJZ" secondAttribute="bottom" id="RY4-Zq-od0"/>
                                     <constraint firstItem="RRD-mb-hQo" firstAttribute="width" secondItem="HAG-NF-7rh" secondAttribute="width" id="YKU-n6-3yO"/>
                                     <constraint firstItem="RRD-mb-hQo" firstAttribute="height" secondItem="HAG-NF-7rh" secondAttribute="height" id="hd7-kA-mdL"/>
-                                    <constraint firstItem="b4I-g0-k4A" firstAttribute="height" secondItem="HAG-NF-7rh" secondAttribute="height" multiplier="1:4" id="oql-dG-IkH"/>
-                                    <constraint firstItem="b4I-g0-k4A" firstAttribute="top" secondItem="HAG-NF-7rh" secondAttribute="top" constant="5" id="sBf-8X-OtM"/>
-                                    <constraint firstItem="b4I-g0-k4A" firstAttribute="width" secondItem="HAG-NF-7rh" secondAttribute="width" multiplier="4:5" id="tB2-xU-8M8"/>
                                     <constraint firstItem="RRD-mb-hQo" firstAttribute="centerY" secondItem="HAG-NF-7rh" secondAttribute="centerY" id="xZF-mQ-2Zs"/>
                                 </constraints>
                             </view>
@@ -89,7 +84,7 @@
                         <outlet property="analyzeButton" destination="eeV-rF-TJZ" id="j3C-Hx-uaY"/>
                         <outlet property="analyzePreviewImageView" destination="RRD-mb-hQo" id="rzg-jj-skK"/>
                         <outlet property="fpvView" destination="HAG-NF-7rh" id="CtQ-C3-XvJ"/>
-                        <outlet property="logLabel" destination="b4I-g0-k4A" id="mx0-vy-mip"/>
+                        <outlet property="iPhoneFPVView" destination="u5L-8m-Vtb" id="0jf-AG-igC"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="spR-T1-rIm" userLabel="First Responder" sceneMemberID="firstResponder"/>
