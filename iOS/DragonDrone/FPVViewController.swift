@@ -25,13 +25,13 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     let faceDetectInterval = TimeInterval(1.00)
     var faceDetectLastUpdate = Date()
     
-    var faceBoxes:[UIView] = []
-    var reuseFaceBoxes:[UIView] = []
-    
+    var faceBoxes:FaceBoxCollection?
+
     @IBOutlet var iPhoneFPVView: UIView!
     @IBOutlet var analyzeButton: UIButton!
     @IBOutlet var fpvView: UIView!
     @IBOutlet var analyzePreviewImageView: UIImageView!
+    
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -45,11 +45,12 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         VideoPreviewer.instance().setView(nil)
         DJISDKManager.videoFeeder()?.primaryVideoFeed.remove(self)
-
     }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        faceBoxes = FaceBoxCollection(parentView: fpvView)
 
     }
 
@@ -79,7 +80,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         iPhonePhotoOutput!.capturePhoto(with: settings, delegate: self)
         
     }
-    
     
     func analyzeDroneCameraFaces() {
         
@@ -125,7 +125,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                         DispatchQueue.main.async(execute: {
                             
                             if (error != nil) {
-                                self.clearFaceBoxes()
+                                self.faceBoxes!.clearAll()
                                 print(error!)
                             }
                         })
@@ -173,8 +173,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         DispatchQueue.main.async(execute: {
             
 
-            self.clearFaceBoxes(reuseCount: faces!.count)
-        
+            self.faceBoxes!.clearAll(reuseCount: faces!.count)
             
             for face in faces as! [CIFaceFeature] {
                 
@@ -196,9 +195,8 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                 faceViewBounds.origin.x += offsetX
                 faceViewBounds.origin.y += offsetY
 
-                    self.addFaceBoxToView(frame: faceViewBounds, view: parentView, color: UIColor.white.cgColor, withAnimation: withAnimation)
+                self.faceBoxes!.add(frame: faceViewBounds, withAnimation: withAnimation)
            
-                
             }
         })
     }
@@ -208,8 +206,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     ///
     
     func drawDetectedFaces(faces: [Face], parentView: UIView) {
-        clearFaceBoxes(reuseCount: faces.count)
-        
+        faceBoxes!.clearAll(reuseCount: faces.count)
         let scale = CGFloat(analyzePreviewImageView.image!.cgImage!.height) / analyzePreviewImageView.layer.frame.height
         
         
@@ -217,134 +214,11 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
             let faceRect = CGRect(x: CGFloat(face.left) / scale, y: CGFloat(face.top) / scale, width:CGFloat(face.width) / scale, height: CGFloat(face.width) / scale)
             
-            let color = face.faceIdentity != nil ? UIColor.red.cgColor : UIColor.yellow.cgColor
-            
-            addFaceBoxToView(frame: faceRect, view: parentView, color: color, labelText: face.faceIdentityName)
+  
+            faceBoxes!.add(frame: faceRect, face: face)
         }
     }
-    
-    func addFaceBoxToView(frame:CGRect, view: UIView, color: CGColor, withAnimation: Bool = false, labelText: String? = nil) {
-        let faceBox:UIView
-        
-        if (reuseFaceBoxes.count > 0) {
-            faceBox = reuseFaceBoxes.first!
-            reuseFaceBoxes.removeFirst()
-        } else {
-            faceBox = createFaceBox(frame: frame)
-            view.addSubview(faceBox)
-        }
-        
-        if (labelText != nil) {
-            addFaceBoxLabel(labelText: labelText!, faceBox: faceBox)
-        }
-        
-        faceBoxes.append(faceBox)
-        
-        UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
-            faceBox.layer.borderColor = color
-            faceBox.layer.opacity = 0.6
-            faceBox.frame = frame
-            
-         
-            
-        }, completion: { (success:Bool) in
-            if (withAnimation) {
-                self.startFaceBoxScanAnimation(faceBox: faceBox)
-            }
-        })
-        
-    }
-    
-    func createFaceBox(frame: CGRect) -> UIView {
-        let faceBox = UIView()
-        faceBox.isHidden = false
-        faceBox.layer.borderWidth = 3
-        faceBox.layer.borderColor = UIColor.yellow.cgColor
-        faceBox.layer.cornerRadius = 10
-        faceBox.backgroundColor = UIColor.clear
-        faceBox.layer.opacity = 0
-        faceBox.layer.frame = frame
-        
-        return faceBox
-    }
-    
-    func startFaceBoxScanAnimation(faceBox: UIView) {
-        
-        let scanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-        let scanView = UIView(frame: scanFrame)
-        scanView.layer.backgroundColor = UIColor.yellow.cgColor
-        scanView.layer.opacity = 0.5
-        
-        let scanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-        let scanView2 = UIView(frame: scanFrame2)
-        scanView2.layer.backgroundColor = UIColor.yellow.cgColor
-        scanView2.layer.opacity = 0.5
-    
-        faceBox.addSubview(scanView)
-        faceBox.addSubview(scanView2)
-        
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
-            
-            scanView.layer.opacity = 1
-            let endScanFrame = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-            scanView.frame = endScanFrame
-            
-            scanView2.layer.opacity = 1
-            let endScanFrame2 = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-            scanView2.frame = endScanFrame2
-            
-        }, completion: { (success:Bool) in
-            
-            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
-                
-                scanView.layer.opacity = 0
-                let endScanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-                scanView.frame = endScanFrame
-                
-                scanView2.layer.opacity = 0
-                let endScanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-                scanView2.frame = endScanFrame2
 
-                
-            }, completion: { (success:Bool) in
-                scanView.removeFromSuperview()
-            })
-
-        })
-    }
-    
-    func addFaceBoxLabel(labelText: String, faceBox: UIView) {
-        
-        let labelFrame = CGRect(x: 0, y: faceBox.frame.height + 5, width: 0, height: 0)
-
-        let label = UILabel(frame: labelFrame)
-        label.text = labelText
-        label.layer.backgroundColor = UIColor.red.cgColor
-        label.textColor = UIColor.white
-        label.sizeToFit()
-        
-        faceBox.addSubview(label)
-    }
-    
-    func clearFaceBoxes(reuseCount:Int = 0) {
-        
-        for faceBox in faceBoxes  {
-            if (reuseFaceBoxes.count >= reuseCount) {
-                faceBox.layer.opacity = 0
-                faceBoxes[0].layer.opacity = 0
-                faceBox.removeFromSuperview()
- 
-            } else {
-                reuseFaceBoxes.append(faceBox)
-            }
-            
-            for sub in faceBox.subviews {
-                sub.removeFromSuperview()
-            }
-        }
-        
-        faceBoxes.removeAll()
-    }
     
     func showPreview(previewImage: UIImage) {
         
@@ -363,7 +237,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         isPreviewShowing = false
     }
-    
     
     func intervalElapsed (interval: TimeInterval, lastUpdate: Date ) -> Bool {
         
@@ -632,6 +505,172 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
 
     }
     
+}
+
+class FaceBoxCollection  {
+    var faceBoxes:[FaceBox] = []
+    var reuseFaceBoxes:[FaceBox] = []
+    
+    let parentView:UIView
+    
+    init(parentView: UIView) {
+        self.parentView = parentView
+    }
+    
+    func add(frame:CGRect, withAnimation: Bool = false, face: Face? = nil) {
+        let faceBox:FaceBox
+        
+        if (reuseFaceBoxes.count > 0) {
+            faceBox = reuseFaceBoxes.first!
+            reuseFaceBoxes.removeFirst()
+        } else {
+            faceBox = FaceBox(frame: frame)
+            parentView.addSubview(faceBox)
+        }
+        
+        var color = UIColor.white.cgColor
+        
+        if (face != nil) {
+            faceBox.face = face
+            color = face!.faceIdentity != nil ? UIColor.red.cgColor : UIColor.yellow.cgColor
+            
+            if (face!.faceIdentityName != nil) {
+                faceBox.addLabel(labelText: face!.faceIdentityName!)
+                
+      
+            } 
+            
+            
+        }
+        
+        faceBoxes.append(faceBox)
+        
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+            faceBox.layer.borderColor = color
+            faceBox.layer.opacity = 0.6
+            faceBox.frame = frame
+            
+            
+            
+        }, completion: { (success:Bool) in
+            if (withAnimation) {
+                faceBox.startScanAnimation()
+            }
+        })
+        
+    }
+
+  
+    func clearAll(reuseCount:Int = 0) {
+        
+        for faceBox in faceBoxes  {
+            if (reuseFaceBoxes.count >= reuseCount) {
+                faceBox.layer.opacity = 0
+                faceBoxes[0].layer.opacity = 0
+                faceBox.layer.backgroundColor = UIColor.clear.cgColor
+                faceBox.removeFromSuperview()
+                
+            } else {
+                reuseFaceBoxes.append(faceBox)
+            }
+            
+            for sub in faceBox.subviews {
+                sub.removeFromSuperview()
+            }
+            
+        }
+        
+        faceBoxes.removeAll()
+    }
+    
+}
+
+class FaceBox: UIView {
+    
+    var face: Face?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        self.isHidden = false
+        self.layer.borderWidth = 3
+        self.layer.borderColor = UIColor.yellow.cgColor
+        self.layer.cornerRadius = 10
+        self.backgroundColor = UIColor.clear
+        self.layer.opacity = 0
+    }
+    
+    convenience init(frame: CGRect, face: Face) {
+        self.init(frame: frame)
+        self.face = face
+    }
+
+    convenience init() {
+        self.init(frame: CGRect.zero)
+    }
+
+    required init(coder aDecoder: NSCoder) {
+        fatalError("This class does not support NSCoding")
+    }
+    
+    
+    func addLabel(labelText: String) {
+        
+        let labelFrame = CGRect(x: 0, y: self.frame.height + 5, width: 0, height: 0)
+        
+        let label = UILabel(frame: labelFrame)
+        label.text = labelText
+        label.layer.backgroundColor = UIColor.red.cgColor
+        label.textColor = UIColor.white
+        label.sizeToFit()
+        
+        self.addSubview(label)
+    }
+    
+    func startScanAnimation() {
+        
+        let scanFrame = CGRect(x: 0, y: 10, width: self.frame.width, height: 2)
+        let scanView = UIView(frame: scanFrame)
+        scanView.layer.backgroundColor = UIColor.yellow.cgColor
+        scanView.layer.opacity = 0.5
+        
+        let scanFrame2 = CGRect(x: 0, y: self.frame.height - 10, width: self.frame.width, height: 2)
+        let scanView2 = UIView(frame: scanFrame2)
+        scanView2.layer.backgroundColor = UIColor.yellow.cgColor
+        scanView2.layer.opacity = 0.5
+        
+        self.addSubview(scanView)
+        self.addSubview(scanView2)
+        
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
+            
+            scanView.layer.opacity = 1
+            let endScanFrame = CGRect(x: 0, y: self.frame.height - 10, width: self.frame.width, height: 2)
+            scanView.frame = endScanFrame
+            
+            scanView2.layer.opacity = 1
+            let endScanFrame2 = CGRect(x: 0, y: 10, width: self.frame.width, height: 2)
+            scanView2.frame = endScanFrame2
+            
+        }, completion: { (success:Bool) in
+            
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+                
+                scanView.layer.opacity = 0
+                let endScanFrame = CGRect(x: 0, y: 10, width: self.frame.width, height: 2)
+                scanView.frame = endScanFrame
+                
+                scanView2.layer.opacity = 0
+                let endScanFrame2 = CGRect(x: 0, y: self.frame.height - 10, width: self.frame.width, height: 2)
+                scanView2.frame = endScanFrame2
+                
+                
+            }, completion: { (success:Bool) in
+                scanView.removeFromSuperview()
+            })
+            
+        })
+    }
 }
 
 
