@@ -25,7 +25,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     let faceDetectInterval = TimeInterval(1.00)
     var faceDetectLastUpdate = Date()
     
-    var faceBoxes:FaceBoxCollection?
+    var faceBoxCollection:FaceBoxCollection?
 
     @IBOutlet var iPhoneFPVView: UIView!
     @IBOutlet var analyzeButton: UIButton!
@@ -50,7 +50,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        faceBoxes = FaceBoxCollection(parentView: fpvView)
+        faceBoxCollection = FaceBoxCollection(parentView: fpvView)
 
     }
 
@@ -125,7 +125,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                         DispatchQueue.main.async(execute: {
                             
                             if (error != nil) {
-                                self.faceBoxes!.clearAll()
+                                self.faceBoxCollection!.clearAll()
                                 print(error!)
                             }
                         })
@@ -173,7 +173,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         DispatchQueue.main.async(execute: {
             
 
-            self.faceBoxes!.clearAll(reuseCount: faces!.count)
+            self.faceBoxCollection!.clearAll(reuseCount: faces!.count)
             
             for face in faces as! [CIFaceFeature] {
                 
@@ -195,7 +195,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                 faceViewBounds.origin.x += offsetX
                 faceViewBounds.origin.y += offsetY
 
-                self.faceBoxes!.add(frame: faceViewBounds, withAnimation: withAnimation)
+                self.faceBoxCollection!.add(frame: faceViewBounds, withAnimation: withAnimation)
            
             }
         })
@@ -206,7 +206,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     ///
     
     func drawDetectedFaces(faces: [Face], parentView: UIView) {
-        faceBoxes!.clearAll(reuseCount: faces.count)
+        faceBoxCollection!.clearAll(reuseCount: faces.count)
         let scale = CGFloat(analyzePreviewImageView.image!.cgImage!.height) / analyzePreviewImageView.layer.frame.height
         
         
@@ -214,10 +214,40 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
             let faceRect = CGRect(x: CGFloat(face.left) / scale, y: CGFloat(face.top) / scale, width:CGFloat(face.width) / scale, height: CGFloat(face.width) / scale)
             
-  
-            faceBoxes!.add(frame: faceRect, face: face)
+            var tapGesture:UIGestureRecognizer? = nil
+            
+            if (face.faceIdentityName != nil) {
+                tapGesture = UITapGestureRecognizer(target: self, action:  #selector (faceBoxAction (_:)))
+                
+            }
+            
+            faceBoxCollection!.add(frame: faceRect, face: face, gestureRecognizer: tapGesture)
+            
+            
         }
     }
+    
+    func faceBoxAction(_ sender:UITapGestureRecognizer) {
+        let facebox = sender.view as! FaceBox
+        let image = analyzePreviewImageView.image
+        
+        DispatchQueue.main.async(execute: {
+            facebox.layer.backgroundColor = facebox.layer.borderColor
+            facebox.startActivityIndicator()
+        })
+        
+        FaceAPI.uploadFace(image!, personId: facebox.face!.faceIdentity!, personGroupId: FaceAPI.FaceGroupID) { (result) in
+            
+            DispatchQueue.main.async(execute: {
+                facebox.layer.backgroundColor = UIColor.clear.cgColor
+                facebox.stopActivityIndicator()
+            })
+
+            print(result)
+
+        }
+    }
+
 
     
     func showPreview(previewImage: UIImage) {
@@ -517,7 +547,7 @@ class FaceBoxCollection  {
         self.parentView = parentView
     }
     
-    func add(frame:CGRect, withAnimation: Bool = false, face: Face? = nil) {
+    func add(frame:CGRect, withAnimation: Bool = false, face: Face? = nil, gestureRecognizer: UIGestureRecognizer? = nil) {
         let faceBox:FaceBox
         
         if (reuseFaceBoxes.count > 0) {
@@ -536,11 +566,14 @@ class FaceBoxCollection  {
             
             if (face!.faceIdentityName != nil) {
                 faceBox.addLabel(labelText: face!.faceIdentityName!)
-                
-      
+//                faceBox.addSecondaryLabel(labelText: "\(Int(face!.faceIdentityConfidence! * 100))%")
+        
             } 
             
-            
+        }
+        
+        if (gestureRecognizer != nil) {
+            faceBox.addGestureRecognizer(gestureRecognizer!)
         }
         
         faceBoxes.append(faceBox)
@@ -567,10 +600,10 @@ class FaceBoxCollection  {
             if (reuseFaceBoxes.count >= reuseCount) {
                 faceBox.layer.opacity = 0
                 faceBoxes[0].layer.opacity = 0
-                faceBox.layer.backgroundColor = UIColor.clear.cgColor
                 faceBox.removeFromSuperview()
                 
             } else {
+                faceBox.layer.backgroundColor = UIColor.clear.cgColor
                 reuseFaceBoxes.append(faceBox)
             }
             
@@ -578,6 +611,7 @@ class FaceBoxCollection  {
                 sub.removeFromSuperview()
             }
             
+            faceBox.gestureRecognizers?.removeAll()
         }
         
         faceBoxes.removeAll()
@@ -613,6 +647,30 @@ class FaceBox: UIView {
         fatalError("This class does not support NSCoding")
     }
     
+    func startActivityIndicator() {
+        
+        let frame = CGRect(x: self.frame.width/2, y: self.frame.height/2 , width: 30, height: 30)
+        let indicator = UIActivityIndicatorView(frame: frame)
+        self.addSubview(indicator)
+        
+        indicator.startAnimating()
+        
+        
+        
+    }
+    
+    func stopActivityIndicator() {
+        
+        for view in self.subviews {
+            if view is UIActivityIndicatorView {
+                let indicator = view as! UIActivityIndicatorView
+                indicator.stopAnimating()
+                indicator.removeFromSuperview()
+            }
+        }
+        
+    }
+    
     
     func addLabel(labelText: String) {
         
@@ -626,6 +684,19 @@ class FaceBox: UIView {
         
         self.addSubview(label)
     }
+    
+    func addSecondaryLabel(labelText: String) {
+        
+        
+        let label = UILabel(frame: CGRect(x: 0, y: self.frame.height + 25, width: 0, height: 0))
+        label.text = labelText
+        label.layer.backgroundColor = UIColor.red.cgColor
+        label.textColor = UIColor.white
+        label.sizeToFit()
+        
+        self.addSubview(label)
+    }
+    
     
     func startScanAnimation() {
         
