@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		983E2B7F1ED89099001ECE04 /* VideoPreviewer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B5E95C1EC4D72D00A66949 /* VideoPreviewer.framework */; };
 		983E2B811ED890D8001ECE04 /* VideoPreviewer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 98B5E95C1EC4D72D00A66949 /* VideoPreviewer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		986570111F03FEBC00A3220F /* FaceBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986570101F03FEBC00A3220F /* FaceBox.swift */; };
 		98762A0C1ED8961E00338431 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 98762A081ED8961E00338431 /* LaunchScreen.storyboard */; };
 		98762A0D1ED8961E00338431 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 98762A0A1ED8961E00338431 /* Main.storyboard */; };
 		98B817F71EBB7C2200D9EBA1 /* FPVViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B817F61EBB7C2200D9EBA1 /* FPVViewController.swift */; };
@@ -55,6 +56,7 @@
 		2FDF3BF12E96C719A1237BEA /* Pods-DragonDrone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DragonDrone.release.xcconfig"; path = "Pods/Target Support Files/Pods-DragonDrone/Pods-DragonDrone.release.xcconfig"; sourceTree = "<group>"; };
 		4B0C6B02B8D1383630F1B67E /* Pods-iOS-FPVDemo-Swift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOS-FPVDemo-Swift.debug.xcconfig"; path = "Pods/Target Support Files/Pods-iOS-FPVDemo-Swift/Pods-iOS-FPVDemo-Swift.debug.xcconfig"; sourceTree = "<group>"; };
 		86985CC91E834EC200577EC7 /* DragonDrone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DragonDrone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		986570101F03FEBC00A3220F /* FaceBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FaceBox.swift; path = DragonDrone/FaceBox.swift; sourceTree = SOURCE_ROOT; };
 		98762A091ED8961E00338431 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = DragonDrone/Base.lproj/LaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
 		98762A0B1ED8961E00338431 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = DragonDrone/Base.lproj/Main.storyboard; sourceTree = SOURCE_ROOT; };
 		98B817F61EBB7C2200D9EBA1 /* FPVViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FPVViewController.swift; path = DragonDrone/FPVViewController.swift; sourceTree = SOURCE_ROOT; };
@@ -125,6 +127,7 @@
 		9840DB171ECB95DC00F328F2 /* Cognitive Services */ = {
 			isa = PBXGroup;
 			children = (
+				986570101F03FEBC00A3220F /* FaceBox.swift */,
 				98E223991EE05D7C00B13014 /* FaceAPI.swift */,
 			);
 			name = "Cognitive Services";
@@ -292,6 +295,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				986570111F03FEBC00A3220F /* FaceBox.swift in Sources */,
 				A435F2221E8BDBF200D58045 /* AppDelegate.swift in Sources */,
 				98B817F71EBB7C2200D9EBA1 /* FPVViewController.swift in Sources */,
 				98E2239A1EE05D7C00B13014 /* FaceAPI.swift in Sources */,

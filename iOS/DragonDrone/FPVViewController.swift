@@ -231,20 +231,17 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         let facebox = sender.view as! FaceBox
         let image = analyzePreviewImageView.image
         
-        DispatchQueue.main.async(execute: {
-            facebox.layer.backgroundColor = facebox.layer.borderColor
-            facebox.startActivityIndicator()
-        })
+        facebox.startActivityIndicator(text: "Adding face...")
         
         FaceAPI.uploadFace(image!, personId: facebox.face!.faceIdentity!, personGroupId: FaceAPI.FaceGroupID) { (result) in
             
-            DispatchQueue.main.async(execute: {
-                facebox.layer.backgroundColor = UIColor.clear.cgColor
+            facebox.updateActivityIndicatorLabel(text: "Training...")
+            
+            FaceAPI.trainPersonGroup(FaceAPI.FaceGroupID, completion: { (result) in
                 facebox.stopActivityIndicator()
+                
+           
             })
-
-            print(result)
-
         }
     }
 
@@ -536,214 +533,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     }
     
 }
-
-class FaceBoxCollection  {
-    var faceBoxes:[FaceBox] = []
-    var reuseFaceBoxes:[FaceBox] = []
-    
-    let parentView:UIView
-    
-    init(parentView: UIView) {
-        self.parentView = parentView
-    }
-    
-    func add(frame:CGRect, withAnimation: Bool = false, face: Face? = nil, gestureRecognizer: UIGestureRecognizer? = nil) {
-        let faceBox:FaceBox
-        
-        if (reuseFaceBoxes.count > 0) {
-            faceBox = reuseFaceBoxes.first!
-            reuseFaceBoxes.removeFirst()
-        } else {
-            faceBox = FaceBox(frame: frame)
-            parentView.addSubview(faceBox)
-        }
-        
-        var color = UIColor.white.cgColor
-        
-        if (face != nil) {
-            faceBox.face = face
-            color = face!.faceIdentity != nil ? UIColor.red.cgColor : UIColor.yellow.cgColor
-            
-            if (face!.faceIdentityName != nil) {
-                faceBox.addLabel(labelText: face!.faceIdentityName!)
-//                faceBox.addSecondaryLabel(labelText: "\(Int(face!.faceIdentityConfidence! * 100))%")
-        
-            } 
-            
-        }
-        
-        if (gestureRecognizer != nil) {
-            faceBox.addGestureRecognizer(gestureRecognizer!)
-        }
-        
-        faceBoxes.append(faceBox)
-        
-        UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
-            faceBox.layer.borderColor = color
-            faceBox.layer.opacity = 0.6
-            faceBox.frame = frame
-            
-            
-            
-        }, completion: { (success:Bool) in
-            if (withAnimation) {
-                faceBox.startScanAnimation()
-            }
-        })
-        
-    }
-
-  
-    func clearAll(reuseCount:Int = 0) {
-        
-        for faceBox in faceBoxes  {
-            if (reuseFaceBoxes.count >= reuseCount) {
-                faceBox.layer.opacity = 0
-                faceBoxes[0].layer.opacity = 0
-                faceBox.removeFromSuperview()
-                
-            } else {
-                faceBox.layer.backgroundColor = UIColor.clear.cgColor
-                reuseFaceBoxes.append(faceBox)
-            }
-            
-            for sub in faceBox.subviews {
-                sub.removeFromSuperview()
-            }
-            
-            faceBox.gestureRecognizers?.removeAll()
-        }
-        
-        faceBoxes.removeAll()
-    }
-    
-}
-
-class FaceBox: UIView {
-    
-    var face: Face?
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        self.isHidden = false
-        self.layer.borderWidth = 3
-        self.layer.borderColor = UIColor.yellow.cgColor
-        self.layer.cornerRadius = 10
-        self.backgroundColor = UIColor.clear
-        self.layer.opacity = 0
-    }
-    
-    convenience init(frame: CGRect, face: Face) {
-        self.init(frame: frame)
-        self.face = face
-    }
-
-    convenience init() {
-        self.init(frame: CGRect.zero)
-    }
-
-    required init(coder aDecoder: NSCoder) {
-        fatalError("This class does not support NSCoding")
-    }
-    
-    func startActivityIndicator() {
-        
-        let frame = CGRect(x: self.frame.width/2, y: self.frame.height/2 , width: 30, height: 30)
-        let indicator = UIActivityIndicatorView(frame: frame)
-        self.addSubview(indicator)
-        
-        indicator.startAnimating()
-        
-        
-        
-    }
-    
-    func stopActivityIndicator() {
-        
-        for view in self.subviews {
-            if view is UIActivityIndicatorView {
-                let indicator = view as! UIActivityIndicatorView
-                indicator.stopAnimating()
-                indicator.removeFromSuperview()
-            }
-        }
-        
-    }
-    
-    
-    func addLabel(labelText: String) {
-        
-        let labelFrame = CGRect(x: 0, y: self.frame.height + 5, width: 0, height: 0)
-        
-        let label = UILabel(frame: labelFrame)
-        label.text = labelText
-        label.layer.backgroundColor = UIColor.red.cgColor
-        label.textColor = UIColor.white
-        label.sizeToFit()
-        
-        self.addSubview(label)
-    }
-    
-    func addSecondaryLabel(labelText: String) {
-        
-        
-        let label = UILabel(frame: CGRect(x: 0, y: self.frame.height + 25, width: 0, height: 0))
-        label.text = labelText
-        label.layer.backgroundColor = UIColor.red.cgColor
-        label.textColor = UIColor.white
-        label.sizeToFit()
-        
-        self.addSubview(label)
-    }
-    
-    
-    func startScanAnimation() {
-        
-        let scanFrame = CGRect(x: 0, y: 10, width: self.frame.width, height: 2)
-        let scanView = UIView(frame: scanFrame)
-        scanView.layer.backgroundColor = UIColor.yellow.cgColor
-        scanView.layer.opacity = 0.5
-        
-        let scanFrame2 = CGRect(x: 0, y: self.frame.height - 10, width: self.frame.width, height: 2)
-        let scanView2 = UIView(frame: scanFrame2)
-        scanView2.layer.backgroundColor = UIColor.yellow.cgColor
-        scanView2.layer.opacity = 0.5
-        
-        self.addSubview(scanView)
-        self.addSubview(scanView2)
-        
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
-            
-            scanView.layer.opacity = 1
-            let endScanFrame = CGRect(x: 0, y: self.frame.height - 10, width: self.frame.width, height: 2)
-            scanView.frame = endScanFrame
-            
-            scanView2.layer.opacity = 1
-            let endScanFrame2 = CGRect(x: 0, y: 10, width: self.frame.width, height: 2)
-            scanView2.frame = endScanFrame2
-            
-        }, completion: { (success:Bool) in
-            
-            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
-                
-                scanView.layer.opacity = 0
-                let endScanFrame = CGRect(x: 0, y: 10, width: self.frame.width, height: 2)
-                scanView.frame = endScanFrame
-                
-                scanView2.layer.opacity = 0
-                let endScanFrame2 = CGRect(x: 0, y: self.frame.height - 10, width: self.frame.width, height: 2)
-                scanView2.frame = endScanFrame2
-                
-                
-            }, completion: { (success:Bool) in
-                scanView.removeFromSuperview()
-            })
-            
-        })
-    }
-}
-
 
 
 
