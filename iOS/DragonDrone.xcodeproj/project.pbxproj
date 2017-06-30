@@ -60,7 +60,7 @@
 		98762A091ED8961E00338431 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = DragonDrone/Base.lproj/LaunchScreen.storyboard; sourceTree = SOURCE_ROOT; };
 		98762A0B1ED8961E00338431 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = DragonDrone/Base.lproj/Main.storyboard; sourceTree = SOURCE_ROOT; };
 		98B817F61EBB7C2200D9EBA1 /* FPVViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FPVViewController.swift; path = DragonDrone/FPVViewController.swift; sourceTree = SOURCE_ROOT; };
-		98E223991EE05D7C00B13014 /* FaceAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceAPI.swift; sourceTree = SOURCE_ROOT; };
+		98E223991EE05D7C00B13014 /* FaceAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FaceAPI.swift; path = DragonDrone/FaceAPI.swift; sourceTree = SOURCE_ROOT; };
 		A435F1F91E8BD61B00D58045 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = DragonDrone/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		A435F1FA1E8BD61B00D58045 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DragonDrone/Info.plist; sourceTree = SOURCE_ROOT; };
 		A435F1FD1E8BD62B00D58045 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DragonDrone/AppDelegate.swift; sourceTree = SOURCE_ROOT; };

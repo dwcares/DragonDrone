@@ -150,7 +150,7 @@ class FaceBox: UIView {
                 
                 indicatorLabel.tag = self.indicatorLabelTag
                 
-                if (indicatorLabel.frame.width - 4 < self.frame.width) {
+                if (indicatorLabel.frame.width - 8 < self.frame.width) {
                     self.addSubview(indicatorLabel)
                 }
             }
@@ -167,7 +167,7 @@ class FaceBox: UIView {
                 indicatorLabel!.sizeToFit()
                 indicatorLabel!.frame = CGRect(x: self.frame.width/2 - indicatorLabel!.frame.width/2, y: self.frame.height/2 + 20, width: indicatorLabel!.frame.width, height: indicatorLabel!.frame.height)
                 
-                if (indicatorLabel!.frame.width - 4 < self.frame.width) {
+                if (indicatorLabel!.frame.width - 8 < self.frame.width) {
                     indicatorLabel!.isHidden = false
                 } else {
                     indicatorLabel!.isHidden = true

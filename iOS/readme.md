@@ -1,5 +1,5 @@
 # DragonDrone: iOS
-The iOS version of the Microsoft Cognitive Services computer vision demo built for a DJI Mavic Pro Drone
+The iOS version of the Microsoft Cognitive Services computer vision demo built for a DJI Mavic Pro Drone.
 
 ![Logo](../images/logo.png)
 
@@ -23,6 +23,10 @@ The iOS version of the Microsoft Cognitive Services computer vision demo built f
 - [x] P1: Take off and land manually - using controller
 - [x] P2: Scan animation
 - [x] P1: Show identified person name
+
+### Phase 0.5
+- [x] P2: Front-facing iOS camera support
+- [x] P2: Tap on identified faces to upload to group and train group
 
 ### Phase 1
 - [ ] P1: take off/land in app

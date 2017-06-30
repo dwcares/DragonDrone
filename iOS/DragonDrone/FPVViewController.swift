@@ -176,9 +176,7 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             self.faceBoxCollection!.clearAll(reuseCount: faces!.count)
             
             for face in faces as! [CIFaceFeature] {
-                
-                print("Found bounds are \(face.bounds)")
-                
+                                
                 // Apply the transform to convert the coordinates
                 var faceViewBounds = face.bounds.applying(transform)
                 
@@ -206,6 +204,9 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     ///
     
     func drawDetectedFaces(faces: [Face], parentView: UIView) {
+        
+        if (analyzePreviewImageView.image == nil) { return }
+        
         faceBoxCollection!.clearAll(reuseCount: faces.count)
         let scale = CGFloat(analyzePreviewImageView.image!.cgImage!.height) / analyzePreviewImageView.layer.frame.height
         
