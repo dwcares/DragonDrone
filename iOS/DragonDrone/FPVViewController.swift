@@ -13,8 +13,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     var isPreviewShowing = false
     var camera : DJICamera!
     
-    let faceGroupID = "dragon_drone"
-
     let analyzeQueue =
         DispatchQueue(label: "TheRobot.DragonDrone.AnalyzeQueue")
     
@@ -143,7 +141,8 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     }
     
     func detectFacesCI(image: UIImage, parentView: UIView, withAnimation: Bool = false) {
-        
+
+        // This is local face detection, not using Cognitive Services.
         guard let personciImage = CIImage(image: image) else {
             return
         }
@@ -438,14 +437,13 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     //  DJIVideoFeedListener
     //
     
+    //  This is called every time it receives a frame from the drone.
     func videoFeed(_ videoFeed: DJIVideoFeed, didUpdateVideoData rawData: Data) {
         
         let videoData = rawData as NSData
         let videoBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: videoData.length)
         
         videoData.getBytes(videoBuffer, length: videoData.length)
-        
-        
         
         VideoPreviewer.instance().push(videoBuffer, length: Int32(videoData.length))
         
@@ -462,22 +460,22 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     @IBAction func analyzeAction(_ sender: UIButton) {
       
 //    //  DEBUG: Use local image instead of drone image -- use 16:9 image
-//        
+        
 //        DispatchQueue.main.async(execute: {
-//            self.showPreview(previewImage: #imageLiteral(resourceName: "smaller"))
-//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smaller"))
+//            self.showPreview(previewImage: #imageLiteral(resourceName: "TestImage"))
+//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "TestImage"))
 //        })
 //        return
 
         if (isPreviewShowing) {
-            
+            // This is the state when the button says "Back"
             DispatchQueue.main.async(execute: {
                 self.setDroneLEDs(setOn: false)
                 self.hidePreview()
                 self.analyzeButton.setTitle("Analyze", for: UIControlState.normal)
             })
         } else {
-        
+            // This is the state when the button says "Analyze"
             analyzeCameraFaces()
         }
 
