@@ -369,11 +369,13 @@ class FaceAPI: NSObject {
 
                     faces.append(detectedFace)
                 }
-                if (faces.count > 0) { completion(faces) }
+          
+                completion(faces)
+                
                 break
             case .failure(let error):
                 print("DetectFaces error - ", error)
-                
+                completion([])
                 break
             }
         }
@@ -392,13 +394,11 @@ class FaceAPI: NSObject {
                 
                 
             } else {
-                DispatchQueue.main.async(execute: {
-                    if (error != nil) {
-                        print(error!)
-                    }
-                    completion(error, nil)
+                if (error != nil) {
+                    print(error!)
+                }
+                completion(error, nil)
 
-                })
             }
         }
     }

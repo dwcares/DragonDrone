@@ -149,7 +149,10 @@ class FaceBox: UIView {
                 indicatorLabel.frame =  CGRect(x: self.frame.width/2 - indicatorLabel.frame.width/2, y: self.frame.height/2 + 20, width: indicatorLabel.frame.width, height: indicatorLabel.frame.height)
                 
                 indicatorLabel.tag = self.indicatorLabelTag
-                self.addSubview(indicatorLabel)
+                
+                if (indicatorLabel.frame.width - 4 < self.frame.width) {
+                    self.addSubview(indicatorLabel)
+                }
             }
             indicator.startAnimating()
         })
@@ -163,7 +166,15 @@ class FaceBox: UIView {
                 indicatorLabel!.text = text
                 indicatorLabel!.sizeToFit()
                 indicatorLabel!.frame = CGRect(x: self.frame.width/2 - indicatorLabel!.frame.width/2, y: self.frame.height/2 + 20, width: indicatorLabel!.frame.width, height: indicatorLabel!.frame.height)
+                
+                if (indicatorLabel!.frame.width - 4 < self.frame.width) {
+                    indicatorLabel!.isHidden = false
+                } else {
+                    indicatorLabel!.isHidden = true
+                }
             }
+            
+            
             
         })
         

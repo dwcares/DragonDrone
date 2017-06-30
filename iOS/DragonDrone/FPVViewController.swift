@@ -502,14 +502,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     
     @IBAction func analyzeAction(_ sender: UIButton) {
-      
-//    //  DEBUG: Use local image instead of drone image -- use 16:9 image
-//        
-//        DispatchQueue.main.async(execute: {
-//            self.showPreview(previewImage: #imageLiteral(resourceName: "smaller"))
-//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smaller"))
-//        })
-//        return
 
         if (isPreviewShowing) {
             
