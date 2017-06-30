@@ -1,34 +1,37 @@
 //
 //  FPVViewController.swift
-//  iOS-FPVDemo-Swift
+//  DragonDrone
 //
 
 import UIKit
 import DJISDK
 import VideoPreviewer
 import CoreImage
+import AVFoundation
 
-class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerDelegate, DJIBaseProductDelegate, DJICameraDelegate {
+class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerDelegate, DJIBaseProductDelegate, DJICameraDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapturePhotoCaptureDelegate {
     
     var isPreviewShowing = false
-    var camera : DJICamera!
     
-    let faceGroupID = "dragon_drone"
-
+    var camera : DJICamera!
     let analyzeQueue =
         DispatchQueue(label: "TheRobot.DragonDrone.AnalyzeQueue")
+    
+    var iPhonePhotoOutput: AVCapturePhotoOutput?
+    var iPhoneVideoSession: AVCaptureSession?
+    var iPhonePreviewLayer: AVCaptureVideoPreviewLayer?
+    let iPhoneVideoSessionQueue = DispatchQueue(label: "TheRobot.DragonDrone.SessionQueue")
     
     let faceDetectInterval = TimeInterval(1.00)
     var faceDetectLastUpdate = Date()
     
-    var faceBoxes:[UIView] = []
-    var reuseFaceBoxes:[UIView] = []
-    
+    var faceBoxCollection:FaceBoxCollection?
+
+    @IBOutlet var iPhoneFPVView: UIView!
     @IBOutlet var analyzeButton: UIButton!
     @IBOutlet var fpvView: UIView!
-    @IBOutlet var logLabel: UILabel!
-  
     @IBOutlet var analyzePreviewImageView: UIImageView!
+    
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -42,38 +45,43 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         VideoPreviewer.instance().setView(nil)
         DJISDKManager.videoFeeder()?.primaryVideoFeed.remove(self)
-
     }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        faceBoxCollection = FaceBoxCollection(parentView: fpvView)
+
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
-    //
-    //  Helpers
-    //
     
-    func fetchCamera() -> DJICamera? {
-        let product = DJISDKManager.product()
+    ///
+    /// Cloud AI Helpers
+    ///
+    
+    func analyzeIPhoneCameraFaces() {
         
-        if (product == nil) {
-            return nil
-        }
+        if (iPhonePhotoOutput == nil) { return }
         
-        if (product!.isKind(of: DJIAircraft.self)) {
-            return (product as! DJIAircraft).camera
-        } else if (product!.isKind(of: DJIHandheld.self)) {
-            return (product as! DJIHandheld).camera
-        }
+        let settings = AVCapturePhotoSettings()
+        let previewPixelType = settings.availablePreviewPhotoPixelFormatTypes.first!
+        let previewFormat = [
+            kCVPixelBufferPixelFormatTypeKey as String: previewPixelType,
+            kCVPixelBufferWidthKey as String: 160,
+            kCVPixelBufferHeightKey as String: 160
+        ]
+        settings.previewPhotoFormat = previewFormat
         
-        return nil
+        // AVCapturePhotoCaptureDelegate capture() does analyze
+        iPhonePhotoOutput!.capturePhoto(with: settings, delegate: self)
+        
     }
     
-    func analyzeCameraFaces() {
+    func analyzeDroneCameraFaces() {
         
         if (camera == nil) { return }
         
@@ -117,69 +125,13 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                         DispatchQueue.main.async(execute: {
                             
                             if (error != nil) {
-                                self.clearFaceBoxes()
+                                self.faceBoxCollection!.clearAll()
                                 print(error!)
                             }
                         })
                     }
                 }
             }
-    }
-
-    func detectFacesRealTime() {
-        
-        if (self.intervalElapsed(interval: faceDetectInterval, lastUpdate: faceDetectLastUpdate) && !isPreviewShowing) {
-            self.faceDetectLastUpdate = Date()
-        } else {
-            return
-        }
-        
-        VideoPreviewer.instance().snapshotPreview { (previewImage) in
-            
-            if (previewImage != nil) {
-                self.detectFacesCI(image: previewImage!, parentView: self.fpvView)
-            }
-        }
-    }
-    
-    func detectFacesCI(image: UIImage, parentView: UIView, withAnimation: Bool = false) {
-        
-        guard let personciImage = CIImage(image: image) else {
-            return
-        }
-        
-        let accuracy = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: accuracy)
-        let faces = faceDetector?.features(in: personciImage)
-        
-        // For converting the Core Image Coordinates to UIView Coordinates
-        let ciImageSize = personciImage.extent.size
-        var transform = CGAffineTransform(scaleX: 1, y: -1)
-        transform = transform.translatedBy(x: 0, y: -ciImageSize.height)
-        
-        clearFaceBoxes(reuseCount: faces!.count)
-        
-        for face in faces as! [CIFaceFeature] {
-            
-            print("Found bounds are \(face.bounds)")
-            
-            // Apply the transform to convert the coordinates
-            var faceViewBounds = face.bounds.applying(transform)
-            
-            // Calculate the actual position and size of the rectangle in the image view
-            let viewSize = view.bounds.size
-            let scale = min(viewSize.width / ciImageSize.width,
-                            viewSize.height / ciImageSize.height)
-            let offsetX = (viewSize.width - ciImageSize.width * scale) / 2
-            let offsetY = (viewSize.height - ciImageSize.height * scale) / 2
-            
-            faceViewBounds = faceViewBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
-            faceViewBounds.origin.x += offsetX
-            faceViewBounds.origin.y += offsetY
-            
-            addFaceBoxToView(frame: faceViewBounds, view: parentView, color: UIColor.white.cgColor, withAnimation: withAnimation)
-            
-        }
     }
     
     func isIdentityFound(faces: [Face]) -> Bool {
@@ -192,9 +144,70 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         return found
     }
     
-    func drawDetectedFaces(faces: [Face], parentView: UIView) {
-        clearFaceBoxes(reuseCount: faces.count)
+    ///
+    /// Local AI Helpers
+    ///
+
+    
+    func detectFacesCI(image: UIImage, parentView: UIView, withAnimation: Bool = false) {
+
+        guard let ciImage = CIImage(image: image) else {
+            return
+        }
         
+        // For converting the Core Image Coordinates to UIView Coordinates
+        let ciImageSize = ciImage.extent.size
+        var transform = CGAffineTransform(scaleX: 1, y: -1)
+        transform = transform.translatedBy(x: 0, y: -ciImageSize.height)
+        
+        detectFacesCI(ciImage: ciImage, transform: transform, parentView: parentView, withAnimation: withAnimation)
+    }
+    
+ 
+    func detectFacesCI(ciImage: CIImage, transform: CGAffineTransform, parentView: UIView, withAnimation: Bool = false) {
+    
+        let accuracy = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: accuracy)
+        let faces = faceDetector?.features(in: ciImage)
+        
+        DispatchQueue.main.async(execute: {
+            
+
+            self.faceBoxCollection!.clearAll(reuseCount: faces!.count)
+            
+            for face in faces as! [CIFaceFeature] {
+                                
+                // Apply the transform to convert the coordinates
+                var faceViewBounds = face.bounds.applying(transform)
+                
+                // Calculate the actual position and size of the rectangle in the image view
+                let viewSize = self.view.bounds.size
+                let ciImageSize = ciImage.extent.size
+
+                let scale = min(viewSize.width / ciImageSize.width,
+                                viewSize.height / ciImageSize.height)
+                let offsetX = (viewSize.width - ciImageSize.width * scale) / 2
+                let offsetY = (viewSize.height - ciImageSize.height * scale) / 2
+                
+                faceViewBounds = faceViewBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
+                faceViewBounds.origin.x += offsetX
+                faceViewBounds.origin.y += offsetY
+
+                self.faceBoxCollection!.add(frame: faceViewBounds, withAnimation: withAnimation)
+           
+            }
+        })
+    }
+    
+    /// 
+    /// UI Helpers
+    ///
+    
+    func drawDetectedFaces(faces: [Face], parentView: UIView) {
+        
+        if (analyzePreviewImageView.image == nil) { return }
+        
+        faceBoxCollection!.clearAll(reuseCount: faces.count)
         let scale = CGFloat(analyzePreviewImageView.image!.cgImage!.height) / analyzePreviewImageView.layer.frame.height
         
         
@@ -202,137 +215,38 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
             
             let faceRect = CGRect(x: CGFloat(face.left) / scale, y: CGFloat(face.top) / scale, width:CGFloat(face.width) / scale, height: CGFloat(face.width) / scale)
             
-            let color = face.faceIdentity != nil ? UIColor.red.cgColor : UIColor.yellow.cgColor
+            var tapGesture:UIGestureRecognizer? = nil
             
-            addFaceBoxToView(frame: faceRect, view: parentView, color: color, labelText: face.faceIdentityName)
-        }
-    }
-    
-    func addFaceBoxToView(frame:CGRect, view: UIView, color: CGColor, withAnimation: Bool = false, labelText: String? = nil) {
-        let faceBox:UIView
-        
-        if (reuseFaceBoxes.count > 0) {
-            faceBox = reuseFaceBoxes.first!
-            reuseFaceBoxes.removeFirst()
-        } else {
-            faceBox = createFaceBox(frame: frame)
-            view.addSubview(faceBox)
-        }
-        
-        if (labelText != nil) {
-            addFaceBoxLabel(labelText: labelText!, faceBox: faceBox)
-        }
-        
-      
-        faceBoxes.append(faceBox)
-
-    
-        
-        UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
-            faceBox.layer.borderColor = color
-            faceBox.layer.opacity = 0.6
-            faceBox.frame = frame
-            
-         
-            
-        }, completion: { (success:Bool) in
-            if (withAnimation) {
-                self.startFaceBoxScanAnimation(faceBox: faceBox)
+            if (face.faceIdentityName != nil) {
+                tapGesture = UITapGestureRecognizer(target: self, action:  #selector (faceBoxAction (_:)))
+                
             }
-        })
-        
+            
+            faceBoxCollection!.add(frame: faceRect, face: face, gestureRecognizer: tapGesture)
+            
+            
+        }
     }
     
-    func createFaceBox(frame: CGRect) -> UIView {
-        let faceBox = UIView()
-        faceBox.isHidden = false
-        faceBox.layer.borderWidth = 3
-        faceBox.layer.borderColor = UIColor.yellow.cgColor
-        faceBox.layer.cornerRadius = 10
-        faceBox.backgroundColor = UIColor.clear
-        faceBox.layer.opacity = 0.0
-        faceBox.layer.frame = frame
+    func faceBoxAction(_ sender:UITapGestureRecognizer) {
+        let facebox = sender.view as! FaceBox
+        let image = analyzePreviewImageView.image
         
-        return faceBox
-    }
-    
-    func startFaceBoxScanAnimation(faceBox: UIView) {
-        let scanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-        let scanView = UIView(frame: scanFrame)
-        scanView.layer.backgroundColor = UIColor.yellow.cgColor
-        scanView.layer.opacity = 0.5
+        facebox.startActivityIndicator(text: "Adding face...")
         
-        let scanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-        let scanView2 = UIView(frame: scanFrame2)
-        scanView2.layer.backgroundColor = UIColor.yellow.cgColor
-        scanView2.layer.opacity = 0.5
-    
-        faceBox.addSubview(scanView)
-        faceBox.addSubview(scanView2)
-        
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: .curveEaseInOut, animations: {
+        FaceAPI.uploadFace(image!, personId: facebox.face!.faceIdentity!, personGroupId: FaceAPI.FaceGroupID) { (result) in
             
-            scanView.layer.opacity = 1
-            let endScanFrame = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-            scanView.frame = endScanFrame
+            facebox.updateActivityIndicatorLabel(text: "Training...")
             
-            scanView2.layer.opacity = 1
-            let endScanFrame2 = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-            scanView2.frame = endScanFrame2
-            
-        }, completion: { (success:Bool) in
-            
-            UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseInOut, animations: {
+            FaceAPI.trainPersonGroup(FaceAPI.FaceGroupID, completion: { (result) in
+                facebox.stopActivityIndicator()
                 
-                scanView.layer.opacity = 0
-                let endScanFrame = CGRect(x: 0, y: 10, width: faceBox.frame.width, height: 2)
-                scanView.frame = endScanFrame
-                
-                scanView2.layer.opacity = 0
-                let endScanFrame2 = CGRect(x: 0, y: faceBox.frame.height - 10, width: faceBox.frame.width, height: 2)
-                scanView2.frame = endScanFrame2
-
-                
-            }, completion: { (success:Bool) in
-                scanView.removeFromSuperview()
+           
             })
-
-        })
-
-
-    }
-    
-    
-    func addFaceBoxLabel(labelText: String, faceBox: UIView) {
-        
-        let labelFrame = CGRect(x: 0, y: faceBox.frame.height + 5, width: 0, height: 0)
-
-        let label = UILabel(frame: labelFrame)
-        label.text = labelText
-        label.layer.backgroundColor = UIColor.red.cgColor
-        label.textColor = UIColor.white
-        label.sizeToFit()
-        
-        faceBox.addSubview(label)
-    }
-    
-    func clearFaceBoxes(reuseCount:Int = 0) {
-        
-        for faceBox in faceBoxes  {
-            if (reuseFaceBoxes.count >= reuseCount) {
-                faceBox.removeFromSuperview()
- 
-            } else {
-                reuseFaceBoxes.append(faceBox)
-            }
-            
-            for sub in faceBox.subviews {
-                sub.removeFromSuperview()
-            }
         }
-        
-        faceBoxes.removeAll()
     }
+
+
     
     func showPreview(previewImage: UIImage) {
         
@@ -352,15 +266,16 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         isPreviewShowing = false
     }
     
-    
     func intervalElapsed (interval: TimeInterval, lastUpdate: Date ) -> Bool {
         
         return (Int(Date().timeIntervalSince(lastUpdate)) >= Int(interval))
     }
     
+    
     // 
     // Drone Helpers
     //
+    
     func setDroneLEDs(setOn: Bool) {
         
         let product = DJISDKManager.product()
@@ -379,6 +294,125 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         }
 
     }
+    
+    func fetchCamera() -> DJICamera? {
+        let product = DJISDKManager.product()
+        
+        if (product == nil) {
+            
+            return nil
+        }
+        
+        if (product!.isKind(of: DJIAircraft.self)) {
+            return (product as! DJIAircraft).camera
+        } else if (product!.isKind(of: DJIHandheld.self)) {
+            return (product as! DJIHandheld).camera
+        }
+        
+        return nil
+    }
+    
+    //
+    // iPhone Video Feed
+    //
+    
+    func setupPhoneFPView() {
+        
+        iPhoneVideoSession = AVCaptureSession()
+        iPhoneVideoSession!.sessionPreset = AVCaptureSessionPreset1280x720
+        
+        let frontCamera = AVCaptureDevice.defaultDevice(withDeviceType: .builtInWideAngleCamera, mediaType: AVMediaTypeVideo, position: .front)
+        
+        
+        var error: NSError?
+        var input: AVCaptureDeviceInput!
+        do {
+            input = try AVCaptureDeviceInput(device: frontCamera)
+        } catch let error1 as NSError {
+            error = error1
+            input = nil
+            print(error!.localizedDescription)
+        }
+        
+        if error == nil && iPhoneVideoSession!.canAddInput(input) {
+            iPhoneVideoSession!.addInput(input)
+            
+            let videoOutput = AVCaptureVideoDataOutput()
+            iPhonePhotoOutput = AVCapturePhotoOutput()
+            if iPhoneVideoSession!.canAddOutput(iPhonePhotoOutput) {
+                iPhoneVideoSession!.addOutput(iPhonePhotoOutput)
+            }
+            
+            if iPhoneVideoSession!.canAddOutput(videoOutput) {
+                iPhoneVideoSession!.addOutput(videoOutput)
+                
+                
+                iPhonePreviewLayer = AVCaptureVideoPreviewLayer(session: iPhoneVideoSession)
+                iPhonePreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspect
+                iPhonePreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.landscapeLeft
+                iPhoneFPVView.layer.insertSublayer(iPhonePreviewLayer!, at: 0)
+                
+                videoOutput.setSampleBufferDelegate(self, queue: iPhoneVideoSessionQueue)
+                
+                iPhoneVideoSession!.startRunning()
+                
+                iPhonePreviewLayer!.frame = iPhoneFPVView.bounds
+            }
+        }
+        
+    }
+    
+    //
+    // AVCapturePhotoCaptureDelegate
+    //
+    
+    func capture(_ captureOutput: AVCapturePhotoOutput,  didFinishProcessingPhotoSampleBuffer photoSampleBuffer: CMSampleBuffer?,  previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings:  AVCaptureResolvedPhotoSettings, bracketSettings:   AVCaptureBracketedStillImageSettings?, error: Error?) {
+        
+        if  let sampleBuffer = photoSampleBuffer, let previewBuffer = previewPhotoSampleBuffer, let dataImage =  AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer:  sampleBuffer, previewPhotoSampleBuffer: previewBuffer) {
+            
+            let dataProvider = CGDataProvider(data: dataImage as CFData)
+            let cgImageRef: CGImage! = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+            
+            let newImageRef = cgImageRef.createMatchingBackingDataWithImage(orienation: UIImageOrientation.upMirrored)
+            
+            let image = UIImage(cgImage: newImageRef!)
+            
+            DispatchQueue.main.async(execute: {
+                self.showPreview(previewImage: image)
+                
+                self.analyzeButton.setTitle("Back", for: UIControlState.normal)
+                
+                self.analyzeFaces(previewImage: image)
+            })
+        }
+    }
+    
+    //
+    //  AVCaptureVideoDataOutputSampleBufferDelegate
+    //
+    
+    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
+        
+        
+        if (self.intervalElapsed(interval: faceDetectInterval, lastUpdate: faceDetectLastUpdate) && !isPreviewShowing) {
+            self.faceDetectLastUpdate = Date()
+        } else {
+            return
+        }
+        
+        if sampleBuffer != nil {
+            
+            let cvImage = CMSampleBufferGetImageBuffer(sampleBuffer)
+            let ciImage = CIImage(cvPixelBuffer: cvImage!)
+            
+
+            var transform = CGAffineTransform(scaleX: -1, y: -1)
+            transform = transform.translatedBy(x: -ciImage.extent.size.width, y: -ciImage.extent.size.height)
+            
+            detectFacesCI(ciImage: ciImage, transform: transform, parentView: self.fpvView)
+        }
+    }
+    
     
     //
     //  DJIBaseProductDelegate
@@ -445,11 +479,20 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
         
         videoData.getBytes(videoBuffer, length: videoData.length)
         
-        
-        
         VideoPreviewer.instance().push(videoBuffer, length: Int32(videoData.length))
         
-        detectFacesRealTime()
+        if (self.intervalElapsed(interval: faceDetectInterval, lastUpdate: faceDetectLastUpdate) && !isPreviewShowing) {
+            self.faceDetectLastUpdate = Date()
+        } else {
+            return
+        }
+        
+        VideoPreviewer.instance().snapshotPreview { (previewImage) in
+            
+            if (previewImage != nil) {
+                self.detectFacesCI(image: previewImage!, parentView: self.fpvView)
+            }
+        }
         
     }
     
@@ -460,14 +503,6 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
     
     
     @IBAction func analyzeAction(_ sender: UIButton) {
-      
-//    //  DEBUG: Use local image instead of drone image -- use 16:9 image
-//        
-//        DispatchQueue.main.async(execute: {
-//            self.showPreview(previewImage: #imageLiteral(resourceName: "smaller"))
-//            self.analyzeFaces(previewImage: #imageLiteral(resourceName: "smaller"))
-//        })
-//        return
 
         if (isPreviewShowing) {
             
@@ -476,11 +511,21 @@ class FPVViewController: UIViewController,  DJIVideoFeedListener, DJISDKManagerD
                 self.hidePreview()
                 self.analyzeButton.setTitle("Analyze", for: UIControlState.normal)
             })
+        } else if (camera != nil) {
+            
+            analyzeDroneCameraFaces()
+            
+        } else if (iPhoneVideoSession == nil) {
+             setupPhoneFPView()
         } else {
         
-            analyzeCameraFaces()
+            analyzeIPhoneCameraFaces()
+            
         }
 
     }
     
 }
+
+
+
